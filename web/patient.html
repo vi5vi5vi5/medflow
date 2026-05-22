@@ -574,7 +574,7 @@ function useViewport() {
 // =============================================================================
 // API CLIENT
 // =============================================================================
-const API = 'http://localhost:8420/api';
+const API = '/api';
 async function apiFetch(path, opts = {}) {
   const res = await fetch(API + path, opts);
   const data = await res.json().catch(() => ({}));
@@ -1010,7 +1010,7 @@ function App() {
             <h4>{connected ? 'Пациент не найден' : 'Нет связи с сервером'}</h4>
             <p>{connected
                 ? `Пациент с ID #${patientId} отсутствует в системе.`
-                : 'Не удалось связаться с MedFlow API на localhost:8420. Запустите сервер и попробуйте снова.'}</p>
+                : 'Не удалось связаться с MedFlow API. Проверьте соединение и попробуйте снова.'}</p>
             <div style={{display:'flex', gap:8, justifyContent:'center'}}>
               <button className="btn ghost" onClick={loadInitial}>Повторить</button>
               <button className="btn primary" onClick={() => window.location.href='/'}>На страницу входа</button>

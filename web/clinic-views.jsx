@@ -1,7 +1,7 @@
 // clinic-views.jsx — section views for MedFlow Clinic admin
 // Exports all view components + modals to window
 
-const API = 'http://localhost:8420/api';
+const API = '/api';
 const apiFetch = async (path, opts = {}) => {
   const res = await fetch(API + path, opts);
   const json = await res.json().catch(() => ({}));

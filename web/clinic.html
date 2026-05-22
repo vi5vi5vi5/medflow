@@ -320,7 +320,7 @@
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
 
-const API = 'http://localhost:8420/api';
+const API = '/api';
 const apiFetch = async (path, opts = {}) => {
   const res = await fetch(API + path, opts);
   const json = await res.json().catch(() => ({}));
@@ -516,7 +516,7 @@ function App() {
         {!connected && (
           <div className="conn-banner">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            Нет соединения с сервером (localhost:8420) — данные могут быть неактуальны
+            Нет соединения с сервером — данные могут быть неактуальны
             <button className="btn ghost" style={{padding:'2px 8px',fontSize:11}} onClick={loadAll}>Повторить</button>
           </div>
         )}

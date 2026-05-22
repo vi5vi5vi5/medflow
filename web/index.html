@@ -196,7 +196,7 @@
     </div>
     <div class="left-stats">
       <div class="left-stat"><div class="n">3</div><div class="l">роли доступа</div></div>
-      <div class="left-stat"><div class="n">REST</div><div class="l">localhost:8420</div></div>
+      <div class="left-stat"><div class="n">REST</div><div class="l">/api</div></div>
       <div class="left-stat"><div class="n">v1.0</div><div class="l">учебный</div></div>
     </div>
   </div>
@@ -253,7 +253,7 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
 
-      <div class="foot-note">MedFlow · http://localhost:8420/api<br>Авторизация отсутствует (учебный проект)</div>
+      <div class="foot-note">MedFlow · REST API на /api<br>Авторизация отсутствует (учебный проект)</div>
     </div>
   </div>
 </div>
@@ -303,7 +303,7 @@
     let displayName = '';
 
     try {
-      const res = await fetch(`http://localhost:8420/api/${meta.endpoint}/${id}`);
+      const res = await fetch(`/api/${meta.endpoint}/${id}`);
       if (res.status === 404) { showErr('ID не найден в системе'); btn.disabled = false; btn.classList.remove('loading'); btnText.textContent = 'Войти'; return; }
       if (!res.ok) { showErr(`Ошибка сервера: ${res.status}`); btn.disabled = false; btn.classList.remove('loading'); btnText.textContent = 'Войти'; return; }
       const data = await res.json();
