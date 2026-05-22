@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>MedFlow — Администратор поликлиники</title>
+<meta name="viewport" content="width=1440" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:          #f4f6f1;
+    --bg-elev:     #ffffff;
+    --bg-soft:     #eaefe5;
+    --bg-tint:     #e4ecdf;
+    --line:        #d7ddd0;
+    --line-soft:   #e6ebdf;
+    --ink:         #1f2a24;
+    --ink-2:       #47564e;
+    --ink-3:       #7a8a80;
+    --ink-4:       #a5b0a6;
+    --accent:      #2d4a3e;
+    --accent-ink:  #f4f6f1;
+    --accent-soft: #cddbcd;
+    --accent-tint: #e2ecdf;
+    --warn:        #b5894b;
+    --warn-soft:   #f2e7d2;
+    --danger:      #a0493d;
+    --danger-soft: #f3dcd6;
+    --info:        #527a7b;
+    --info-soft:   #d9e6e3;
+    --radius:      8px;
+    --radius-sm:   5px;
+    --radius-lg:   12px;
+  }
+  [data-theme="dark"] {
+    --bg:          #141a17;
+    --bg-elev:     #1b231e;
+    --bg-soft:     #1f2924;
+    --bg-tint:     #243029;
+    --line:        #2d3a32;
+    --line-soft:   #253029;
+    --ink:         #e7ece6;
+    --ink-2:       #b6c1b9;
+    --ink-3:       #849185;
+    --ink-4:       #5d6962;
+    --accent:      #8fb89c;
+    --accent-ink:  #0f1513;
+    --accent-soft: #2a3b31;
+    --accent-tint: #1e2a23;
+    --warn:        #d4b07a;
+    --warn-soft:   #3a2f1e;
+    --danger:      #d18577;
+    --danger-soft: #3a241f;
+    --info:        #8eb5b3;
+    --info-soft:   #1f2c2c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: "Inter Tight", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-feature-settings: "tnum"; }
+
+  /* ── layout ── */
+  .app { display: grid; grid-template-columns: 224px 1fr; height: 100vh; overflow: hidden; }
+  .sidebar {
+    background: var(--bg-tint);
+    border-right: 1px solid var(--line);
+    padding: 14px 10px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px 8px; font-weight: 700; letter-spacing: -0.02em; font-size: 15px; }
+  .brand-mark { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .clinic-info { margin: 0 4px 10px; padding: 9px 11px; background: var(--bg-elev); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+  .clinic-info .ci-label { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .clinic-info .ci-name { font-weight: 500; font-size: 13px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .clinic-info .ci-addr { font-size: 11px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .side-label { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin: 10px 10px 3px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--ink-2); cursor: pointer; font-size: 13px; user-select: none; }
+  .nav-item:hover { background: var(--bg-soft); color: var(--ink); }
+  .nav-item.active { background: var(--accent); color: var(--accent-ink); }
+  .nav-item .ico { width: 16px; height: 16px; flex-shrink: 0; display: grid; place-items: center; }
+  .nav-item .ico svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-item .cnt { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3); background: var(--bg-elev); padding: 1px 6px; border-radius: 4px; }
+  .nav-item.active .cnt { background: rgba(255,255,255,.15); color: var(--accent-ink); }
+  .sidebar-foot { margin-top: auto; padding: 10px 10px 4px; border-top: 1px solid var(--line-soft); display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 600; font-size: 11px; flex-shrink: 0; font-family: "JetBrains Mono", monospace; }
+  .who { font-size: 12.5px; font-weight: 500; }
+  .role-badge { font-size: 11px; color: var(--ink-3); }
+
+  /* ── content ── */
+  .content { display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 10px 22px; border-bottom: 1px solid var(--line); background: var(--bg-elev); flex-shrink: 0; }
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-3); }
+  .breadcrumb .sep { color: var(--ink-4); }
+  .breadcrumb .here { color: var(--ink); font-weight: 500; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--bg-soft); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: 6px 10px; color: var(--ink-3); font-size: 13px; max-width: 320px; flex: 1; }
+  .search svg { flex-shrink: 0; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--radius-sm); color: var(--ink-2); cursor: pointer; border: 1px solid transparent; background: transparent; flex-shrink: 0; }
+  .icon-btn:hover { background: var(--bg-soft); }
+  .btn { font: inherit; cursor: pointer; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; white-space: nowrap; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { opacity: 0.88; }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--line); }
+  .btn.ghost:hover { background: var(--bg-soft); color: var(--ink); }
+  .btn.danger { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+  .btn.danger:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .scroll-area { flex: 1; overflow-y: auto; }
+
+  /* ── main content ── */
+  .main { padding: 22px; }
+  .page-head { display: flex; align-items: flex-end; gap: 14px; margin-bottom: 18px; }
+  .page-head h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.025em; }
+  .page-head .page-sub { color: var(--ink-3); font-size: 13px; }
+  .page-head .head-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .stat-grid { display: grid; gap: 12px; margin-bottom: 18px; }
+  .stat { background: var(--bg-elev); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 14px; }
+  .stat .label { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  .stat .num { font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 26px; letter-spacing: -0.02em; color: var(--ink); margin-top: 4px; }
+  .stat.highlight { background: var(--accent-tint); border-color: var(--accent-soft); }
+
+  .card { background: var(--bg-elev); border: 1px solid var(--line-soft); border-radius: var(--radius); }
+  .card-head { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 10px; }
+  .card-head h3 { margin: 0; font-size: 13.5px; font-weight: 600; }
+  .card-head .head-note { font-size: 12px; color: var(--ink-3); }
+  .card-head .tail { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+  .card-body { padding: 12px 14px; }
+  .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .detail { display: grid; grid-template-columns: 1fr 360px; gap: 12px; }
+
+  /* ── table ── */
+  table.list { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.list th { text-align: left; font-weight: 500; color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 12px; border-bottom: 1px solid var(--line-soft); }
+  table.list td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+  table.list tr:hover td { background: var(--bg-soft); cursor: pointer; }
+  table.list tr:last-child td { border-bottom: none; }
+  .cell-name { display: flex; align-items: center; gap: 10px; }
+
+  /* ── tags ── */
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; background: var(--bg-soft); color: var(--ink-2); border: 1px solid var(--line-soft); }
+  .tag.dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .tag.ok    { background: var(--accent-tint); color: var(--accent);  border-color: var(--accent-soft); }
+  .tag.warn  { background: var(--warn-soft);   color: var(--warn);   border-color: transparent; }
+  .tag.err   { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+  .tag.info  { background: var(--info-soft);   color: var(--info);   border-color: transparent; }
+
+  /* ── chips ── */
+  .chip { padding: 4px 10px; border-radius: 999px; font-size: 12px; background: var(--bg-soft); color: var(--ink-2); border: 1px solid var(--line-soft); cursor: pointer; user-select: none; }
+  .chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ── mini calendar ── */
+  .mini-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .mini-cal .dow { font-size: 10px; color: var(--ink-3); text-align: center; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 0; }
+  .mini-cal .d { aspect-ratio: 1; display: grid; place-items: center; font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-2); border-radius: 5px; cursor: pointer; position: relative; }
+  .mini-cal .d:hover { background: var(--bg-soft); }
+  .mini-cal .d.mute { color: var(--ink-4); }
+  .mini-cal .d.today { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .mini-cal .d.has::after { content: ""; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+  .mini-cal .d.today.has::after { background: var(--accent-ink); }
+
+  /* ── calendar (day) ── */
+  .cal-page { height: 100%; display: flex; flex-direction: column; }
+  .cal-nav  { padding: 14px 22px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--line-soft); background: var(--bg-elev); flex-shrink: 0; }
+  .cal-scroll { flex: 1 1 0; min-height: 0; overflow: auto; position: relative; background: var(--bg); }
+  .cal-rows  { display: flex; flex-direction: column; width: max-content; min-width: 100%; }
+  .cal-row-head { display: flex; position: sticky; top: 0; z-index: 5; background: var(--bg-soft); border-bottom: 1px solid var(--line); }
+  .cal-row-body { display: flex; position: relative; }
+  .doc-head {
+    box-sizing: border-box; padding: 8px 10px;
+    border-right: 1px solid var(--line-soft);
+    background: var(--bg-soft);
+    display: flex; align-items: center; gap: 8px; font-size: 12.5px;
+    flex-shrink: 0;
+  }
+  .specialty { color: var(--ink-3); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-room { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 11px; padding: 1px 6px; background: var(--bg-elev); border-radius: 3px; color: var(--ink-3); border: 1px solid var(--line-soft); flex-shrink: 0; }
+  .doc-col {
+    position: relative; flex-shrink: 0;
+    background: var(--line);
+    border-right: 1px solid var(--line-soft);
+    overflow: hidden;
+  }
+  [data-theme="dark"] .doc-col { background: #0c100e; }
+  .time-col {
+    position: relative; flex-shrink: 0;
+    background: var(--bg);
+    border-right: 1px solid var(--line);
+  }
+  .time-label {
+    position: absolute; right: 6px;
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    color: var(--ink-3); transform: translateY(-50%); pointer-events: none;
+  }
+  .work-window {
+    position: absolute; left: 0; right: 0;
+    background: var(--bg-elev);
+    cursor: pointer; transition: background .15s;
+  }
+  .work-window:hover { background: var(--accent-tint); }
+  .hour-line {
+    position: absolute; left: 0; right: 0; height: 1px;
+    background: var(--line-soft); pointer-events: none;
+  }
+  .half-line {
+    position: absolute; left: 0; right: 0; height: 1px;
+    background: var(--line-soft); opacity: 0.45;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(90deg, var(--line-soft) 0, var(--line-soft) 4px, transparent 4px, transparent 8px);
+    background-color: transparent;
+  }
+  .time-label-half {
+    font-size: 9.5px;
+    color: var(--ink-4);
+  }
+  .appt {
+    position: absolute; left: 3px; right: 3px;
+    background: var(--accent-tint); color: var(--accent);
+    border: 1px solid var(--accent-soft); border-left: 3px solid var(--accent);
+    border-radius: 4px; padding: 3px 7px; font-size: 11.5px;
+    overflow: hidden; cursor: pointer;
+    box-sizing: border-box;
+  }
+  .appt.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; border-left-color: var(--warn); }
+  .appt.info { background: var(--info-soft); color: var(--info); border-color: transparent; border-left-color: var(--info); }
+  .appt.err  { background: var(--danger-soft); color: var(--danger); border-color: transparent; border-left-color: var(--danger); }
+  .appt.cancelled { opacity: 0.5; }
+  .appt.cancelled .pname { text-decoration: line-through; }
+  .pname { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ptime { font-family: "JetBrains Mono", monospace; font-size: 10px; opacity: 0.8; }
+
+  /* ── detail panel ── */
+  .detail-tabs { display: flex; gap: 2px; padding: 10px 14px 0; border-bottom: 1px solid var(--line-soft); }
+  .detail-tab { padding: 6px 12px; border-bottom: 2px solid transparent; font-size: 13px; color: var(--ink-3); cursor: pointer; white-space: nowrap; }
+  .detail-tab.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 500; }
+
+  /* ── timeline ── */
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 1px; background: var(--line); }
+  .timeline .tl-item { position: relative; padding-bottom: 14px; }
+  .timeline .tl-item::before { content: ""; position: absolute; left: -20px; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg-elev); border: 2px solid var(--accent); }
+  .timeline .tl-date { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3); }
+  .timeline .tl-title { font-weight: 500; font-size: 13px; margin: 2px 0; }
+  .timeline .tl-note { font-size: 12px; color: var(--ink-2); padding: 7px 10px; background: var(--bg-soft); border-radius: 5px; margin-top: 4px; }
+
+  /* ── steps (wizard) ── */
+  .steps { display: flex; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 4px; }
+  .step { display: flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 13px; }
+  .step .n { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-family: "JetBrains Mono", monospace; font-size: 11px; background: var(--bg-elev); flex-shrink: 0; }
+  .step.done { color: var(--accent); }
+  .step.done .n { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .step.cur { color: var(--ink); font-weight: 500; }
+  .step.cur .n { border-color: var(--accent); color: var(--accent); }
+  .line { height: 1px; flex: 0 0 28px; background: var(--line); margin: 0 8px; }
+  .line.on { background: var(--accent); }
+
+  /* ── form ── */
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .field label { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+  .field .hint { font-size: 11px; color: var(--ink-3); }
+  .input-el {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: var(--radius-sm); padding: 7px 10px;
+    font: inherit; font-size: 13px; color: var(--ink);
+    outline: none; transition: border-color .15s; width: 100%;
+  }
+  .input-el:focus { border-color: var(--accent); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── search inside card ── */
+  .search input { border: none; background: transparent; font: inherit; font-size: 13px; outline: none; flex: 1; color: var(--ink); }
+  .search input::placeholder { color: var(--ink-3); }
+
+  /* ── modal ── */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(15,20,18,0.45); backdrop-filter: blur(3px); display: grid; place-items: center; z-index: 100; padding: 24px; }
+  .modal-box { background: var(--bg-elev); border-radius: var(--radius-lg); box-shadow: 0 24px 60px rgba(0,0,0,0.2); overflow: hidden; width: 100%; }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line-soft); }
+  .modal-title { font-weight: 600; font-size: 14px; }
+  .modal-body { padding: 18px; }
+
+  /* ── toast ── */
+  .toast { position: fixed; bottom: 24px; right: 24px; z-index: 200; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: toast-in .2s ease; }
+  .toast.ok  { background: var(--accent-tint); color: var(--accent); border: 1px solid var(--accent-soft); }
+  .toast.err { background: var(--danger-soft); color: var(--danger); border: 1px solid transparent; }
+  @keyframes toast-in { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+  /* ── theme toggle ── */
+  .theme-toggle { font: inherit; background: var(--bg-elev); border: 1px solid var(--line); color: var(--ink-2); padding: 5px 11px; border-radius: 999px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 7px; }
+  .theme-toggle:hover { background: var(--bg-soft); }
+  .tgl { width: 26px; height: 15px; border-radius: 999px; background: var(--line); position: relative; transition: background .2s; }
+  .tgl::after { content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: var(--bg-elev); transition: left .2s; }
+  [data-theme="dark"] .tgl { background: var(--accent); }
+  [data-theme="dark"] .tgl::after { left: 13px; background: var(--accent-ink); }
+
+  /* connection banner */
+  .conn-banner { background: var(--warn-soft); border-bottom: 1px solid var(--warn); padding: 7px 22px; font-size: 12px; color: var(--warn); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="/clinic-views.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+const API = 'http://localhost:8420/api';
+const apiFetch = async (path, opts = {}) => {
+  const res = await fetch(API + path, opts);
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+  return json;
+};
+const apiGet = p => apiFetch(p);
+const apiPost = (p, b) => apiFetch(p, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(b) });
+const apiPatch = (p, b) => apiFetch(p, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(b) });
+const apiDel = p => apiFetch(p, { method:'DELETE' });
+
+// NAV items
+const NAV = [
+  { id:'dashboard', label:'Дашборд',          icon:<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> },
+  { id:'calendar',  label:'Расписание сегодня', icon:<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> },
+  { id:'patients',  label:'Пациенты',           icon:<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+  { id:'doctors',   label:'Врачи',              icon:<svg viewBox="0 0 24 24"><path d="M12 2v2M10 3h4M8 7a4 4 0 0 0 8 0V5H8z"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/><path d="M12 14v4M10 16h4"/></svg> },
+  { id:'rooms',     label:'Кабинеты',           icon:<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+  { id:'newappt',   label:'Новая запись',        icon:<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>, primary: true },
+];
+
+const VIEW_LABELS = { dashboard:'Дашборд', calendar:'Расписание', patients:'Пациенты', doctors:'Врачи', rooms:'Кабинеты', newappt:'Новая запись' };
+
+function App() {
+  const [view, setView] = useState('dashboard');
+  const [theme, setTheme] = useState('light');
+  const [connected, setConnected] = useState(true);
+
+  // auth — clinicId приходит из URL /clinic/:id, иначе из localStorage
+  const pathMatch = window.location.pathname.match(/^\/clinic\/(\d+)/);
+  const auth = (() => { try { return JSON.parse(localStorage.getItem('medflow_auth') || '{}'); } catch{ return {}; } })();
+  const clinicId = pathMatch ? parseInt(pathMatch[1], 10) : (auth.id ?? 0);
+
+  // data
+  const [clinic, setClinic] = useState(null);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [specs, setSpecs] = useState([]);
+  const [schedules, setSchedules] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [today, setToday] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // modal + prefill
+  const [modal, setModal] = useState(null); // {type, ...data}
+  const [prefillPatient, setPrefillPatient] = useState(null);
+  const [prefillAppt, setPrefillAppt]       = useState(null);
+
+  // toast
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  function showToast(msg, ok = true) {
+    clearTimeout(toastTimer.current);
+    setToast({ msg, ok });
+    toastTimer.current = setTimeout(() => setToast(null), 3200);
+  }
+
+  // theme
+  useEffect(() => {
+    const saved = localStorage.getItem('mf_theme') || 'light';
+    setTheme(saved);
+    document.documentElement.dataset.theme = saved;
+  }, []);
+  function toggleTheme() {
+    const t = theme === 'light' ? 'dark' : 'light';
+    setTheme(t);
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem('mf_theme', t);
+  }
+
+  // load all data
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [cl, pt, dc, rm, sp, sc, ap, td] = await Promise.all([
+        apiGet(`/clinics/${clinicId}`).catch(() => null),
+        apiGet('/patients').catch(() => []),
+        apiGet('/doctors').catch(() => []),
+        apiGet(`/rooms/by-clinic/${clinicId}`).catch(() => []),
+        apiGet('/specializations').catch(() => []),
+        apiGet('/schedules').catch(() => []),
+        apiGet('/appointments').catch(() => []),
+        apiGet('/schedules/today').catch(() => null),
+      ]);
+      if (td?.today) setToday(td.today);
+      setClinic(cl);
+      const clinicPatients   = Array.isArray(pt) ? pt.filter(p => p.clinic_id === clinicId) : [];
+      const clinicRooms      = Array.isArray(rm) ? rm : [];
+      const allSchedules     = Array.isArray(sc) ? sc : [];
+      const clinicRoomIds    = new Set(clinicRooms.map(r => r.id));
+      const clinicPatientIds = new Set(clinicPatients.map(p => p.id));
+      setPatients(clinicPatients);
+      setDoctors(Array.isArray(dc) ? dc : []);        // все врачи видны — чтобы назначать расписание в этой клинике
+      setRooms(clinicRooms);
+      setSpecs(Array.isArray(sp) ? sp : []);
+      setSchedules(allSchedules);                      // все расписания; календарь фильтрует inline
+      // Запись относится к клинике если: пациент её, ИЛИ врач работает в её кабинете в этот день/время
+      setAppointments(Array.isArray(ap) ? ap.filter(a => {
+        if (clinicPatientIds.has(a.patientId)) return true;
+        const dateStr = a.scheduledAt?.slice(0, 10);
+        if (!dateStr) return false;
+        const j = new Date(dateStr + 'T00:00:00').getDay();
+        const dow = j === 0 ? 7 : j;
+        const timeHH = a.scheduledAt.slice(11, 13);
+        return allSchedules.some(s =>
+          s.doctorId === a.doctorId && s.dayOfWeek === dow &&
+          clinicRoomIds.has(s.roomId) &&
+          s.timeFrom?.slice(0, 2) <= timeHH && timeHH < s.timeTo?.slice(0, 2)
+        );
+      }) : []);
+      setConnected(true);
+    } catch(e) {
+      setConnected(false);
+    }
+    setLoading(false);
+  }, [clinicId]);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  // CRUD handlers
+  async function deletePatient(id) { try { await apiDel(`/patients/${id}`); await loadAll(); showToast('Пациент удалён'); } catch(e) { showToast(e.message, false); } }
+  async function deleteDoctor(id)  { try { await apiDel(`/doctors/${id}`);  await loadAll(); showToast('Врач удалён'); }    catch(e) { showToast(e.message, false); } }
+  async function deleteRoom(id)    { try { await apiDel(`/rooms/${id}`);    await loadAll(); showToast('Кабинет удалён'); } catch(e) { showToast(e.message, false); } }
+  async function deleteSchedule(id){ try { await apiDel(`/schedules/${id}`);await loadAll(); showToast('Расписание удалено'); }catch(e){ showToast(e.message, false); } }
+  async function changeApptStatus(id, status) {
+    try { await apiPatch(`/appointments/${id}/status`, { status }); await loadAll(); showToast('Статус обновлён'); }
+    catch(e) { showToast(e.message, false); }
+  }
+
+  const openNewAppt = (patient, prefill) => {
+    setPrefillPatient(patient || null);
+    setPrefillAppt(prefill || null);
+    setView('newappt');
+  };
+
+  const props = { clinicId, clinic, patients, doctors, rooms, specs, schedules, appointments, today };
+
+  return (
+    <div className="app">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">М</div>
+          <span>MedFlow</span>
+        </div>
+        {clinic && (
+          <div className="clinic-info">
+            <div className="ci-label">Поликлиника</div>
+            <div className="ci-name">{clinic.name}</div>
+            <div className="ci-addr">{clinic.address}</div>
+          </div>
+        )}
+        <div className="side-label">Меню</div>
+        {NAV.map(n => (
+          <div key={n.id} className={`nav-item${view===n.id?' active':''}${n.primary?' nav-primary':''}`} onClick={() => setView(n.id)}>
+            <span className="ico">{n.icon}</span>
+            <span>{n.label}</span>
+            {n.id==='patients' && <span className="cnt">{patients.length}</span>}
+            {n.id==='doctors'  && <span className="cnt">{doctors.length}</span>}
+            {n.id==='rooms'    && <span className="cnt">{rooms.length}</span>}
+          </div>
+        ))}
+        <div style={{flex:1}}></div>
+        <div className="sidebar-foot">
+          <div className="avatar">{clinicId}</div>
+          <div>
+            <div className="who">{clinic?.name || 'Поликлиника'}</div>
+            <div className="role-badge">Администратор · ID {clinicId}</div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="content">
+        {/* Topbar */}
+        <div className="topbar">
+          <div className="breadcrumb">
+            <span>MedFlow</span>
+            <span className="sep">/</span>
+            <span className="here">{VIEW_LABELS[view]}</span>
+          </div>
+          <div className="topbar-right">
+            <button className="theme-toggle" onClick={toggleTheme}>
+              <span className="tgl"></span>
+              <span>{theme==='dark'?'Тёмная':'Светлая'}</span>
+            </button>
+            <button className="btn primary" onClick={() => openNewAppt()}>+ Новая запись</button>
+          </div>
+        </div>
+
+        {/* Connection warning */}
+        {!connected && (
+          <div className="conn-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            Нет соединения с сервером (localhost:8420) — данные могут быть неактуальны
+            <button className="btn ghost" style={{padding:'2px 8px',fontSize:11}} onClick={loadAll}>Повторить</button>
+          </div>
+        )}
+
+        {/* View area */}
+        <div className="scroll-area">
+          {loading ? (
+            <div style={{display:'grid',placeItems:'center',height:'60vh',color:'var(--ink-3)',fontSize:14}}>Загрузка данных…</div>
+          ) : (
+            <>
+              {view==='dashboard' && <DashboardView {...props} onNavigate={setView} onNewAppt={openNewAppt} toast={showToast} />}
+              {view==='calendar'  && <CalendarView  {...props} onNewAppt={openNewAppt} onApptClick={a => setModal({type:'appt', appt:a})} />}
+              {view==='patients'  && <PatientsView  {...props} onAddPatient={() => setModal({type:'addPatient'})} onDeletePatient={deletePatient} onNewAppt={openNewAppt} onChangeApptStatus={changeApptStatus} toast={showToast} />}
+              {view==='doctors'   && <DoctorsView   {...props} onAddDoctor={() => setModal({type:'addDoctor'})} onDeleteDoctor={deleteDoctor} onAddSchedule={d => setModal({type:'addSchedule', doctor:d})} onDeleteSchedule={deleteSchedule} toast={showToast} />}
+              {view==='rooms'     && <RoomsView     {...props} onAddRoom={() => setModal({type:'addRoom'})} onDeleteRoom={deleteRoom} />}
+              {view==='newappt'   && <NewAppointmentView {...props} prefillPatient={prefillPatient} prefillAppt={prefillAppt} onCreated={() => { loadAll(); setPrefillPatient(null); setPrefillAppt(null); setView('calendar'); }} toast={showToast} />}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Modals */}
+      {modal?.type==='addPatient' && <AddPatientModal clinicId={clinicId} onSave={() => { loadAll(); setModal(null); }} onClose={() => setModal(null)} toast={showToast} />}
+      {modal?.type==='addDoctor'  && <AddDoctorModal  specs={specs}  onSave={() => { loadAll(); setModal(null); }} onClose={() => setModal(null)} toast={showToast} />}
+      {modal?.type==='addRoom'    && <AddRoomModal    clinicId={clinicId} onSave={() => { loadAll(); setModal(null); }} onClose={() => setModal(null)} toast={showToast} />}
+      {modal?.type==='addSchedule'&& <AddScheduleModal doctor={modal.doctor} rooms={rooms} onSave={() => { loadAll(); setModal(null); }} onClose={() => setModal(null)} toast={showToast} />}
+      {modal?.type==='appt'       && <ApptDetailModal appt={modal.appt} patients={patients} doctors={doctors} onClose={() => setModal(null)} onChangeStatus={(id,s) => { changeApptStatus(id,s); setModal(null); }} toast={showToast} />}
+
+      {/* Toast */}
+      {toast && <div className={`toast ${toast.ok?'ok':'err'}`}>{toast.msg}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

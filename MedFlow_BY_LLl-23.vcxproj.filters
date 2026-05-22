@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Структуры">
+      <UniqueIdentifier>{ab62dcc0-b2a9-4ed3-8e27-c398e58f67f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Интерфесы">
+      <UniqueIdentifier>{1b1c25a8-cf90-4227-87d0-89a850bafe8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Интерфесы\InMemory">
+      <UniqueIdentifier>{6584acc4-e23b-4db8-ac7d-d53ff0a8ff7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Интерфесы\SQLite">
+      <UniqueIdentifier>{a6d9c5e2-5a3e-4f1d-8b6c-72f5a4d2e9b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Интерфесы\Абстрактные">
+      <UniqueIdentifier>{b3a97067-629f-4452-b7f7-efd719b0476f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Сервисы">
+      <UniqueIdentifier>{9aab3441-2d18-416d-9188-4bec7f3735cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Зависимости">
+      <UniqueIdentifier>{4b28e76b-2323-4b31-8604-cdf0aab1a36d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{c7f1a2d3-4e5f-4a6b-8c9d-1e2f3a4b5c6d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MedFlow_BY_LLl-23.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ApiServer.cpp">
+      <Filter>API</Filter>
+    </ClCompile>
+    <ClCompile Include="requirements\sqlite3.c">
+      <Filter>Зависимости</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="models\Appointment.h">
+      <Filter>Структуры</Filter>
+    </ClInclude>
+    <ClInclude Include="models\Clinic.h">
+      <Filter>Структуры</Filter>
+    </ClInclude>
+    <ClInclude Include="models\Doctor.h">
+      <Filter>Структуры</Filter>
+    </ClInclude>
+    <ClInclude Include="models\Patient.h">
+      <Filter>Структуры</Filter>
+    </ClInclude>
+    <ClInclude Include="models\Room.h">
+      <Filter>Структуры</Filter>
+    </ClInclude>
+    <ClInclude Include="models\Schedule.h">
+      <Filter>Структуры</Filter>
+    </ClInclude>
+    <ClInclude Include="models\Specialization.h">
+      <Filter>Структуры</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Abstract\IPatient.h">
+      <Filter>Интерфесы\Абстрактные</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Abstract\ISchedule.h">
+      <Filter>Интерфесы\Абстрактные</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Abstract\IAppointment.h">
+      <Filter>Интерфесы\Абстрактные</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Abstract\ISpecialization.h">
+      <Filter>Интерфесы\Абстрактные</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Abstract\IClinic.h">
+      <Filter>Интерфесы\Абстрактные</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Abstract\IDoctor.h">
+      <Filter>Интерфесы\Абстрактные</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Abstract\IRoom.h">
+      <Filter>Интерфесы\Абстрактные</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\InMemory\InMemoryClinic.h">
+      <Filter>Интерфесы\InMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\InMemory\InMemoryRoom.h">
+      <Filter>Интерфесы\InMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\InMemory\InMemoryDoctor.h">
+      <Filter>Интерфесы\InMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\InMemory\InMemoryPatient.h">
+      <Filter>Интерфесы\InMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\InMemory\InMemorySpecialization.h">
+      <Filter>Интерфесы\InMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\InMemory\InMemorySchedule.h">
+      <Filter>Интерфесы\InMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\InMemory\InMemoryAppointment.h">
+      <Filter>Интерфесы\InMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="services\PatientService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="services\DoctorService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="services\ScheduleService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="services\ClinicService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="services\RoomService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="services\SpecializationService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="services\AppointmentService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="services\BackupService.h">
+      <Filter>Сервисы</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ApiServer.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="requirements\httplib.h">
+      <Filter>Зависимости</Filter>
+    </ClInclude>
+    <ClInclude Include="requirements\json.hpp">
+      <Filter>Зависимости</Filter>
+    </ClInclude>
+    <ClInclude Include="requirements\sqlite3.h">
+      <Filter>Зависимости</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqliteDb.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqliteClinic.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqliteRoom.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqliteSpecialization.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqlitePatient.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqliteDoctor.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqliteSchedule.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\sqlite\SqliteAppointment.h">
+      <Filter>Интерфесы\SQLite</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

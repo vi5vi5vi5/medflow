@@ -1,0 +1,13 @@
+x64/
+Debug/
+Release/
+.vs/
+enc_temp_folder/
+MedFlow_.244c11b9/
+*.vcxproj.user
+*.user
+*.suo
+*.log
+.git/
+Dockerfile
+.dockerignore

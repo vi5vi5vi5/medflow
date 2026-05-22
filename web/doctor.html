@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>MedFlow — Кабинет врача</title>
+<meta name="viewport" content="width=1440" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:          #f4f6f1;
+    --bg-elev:     #ffffff;
+    --bg-soft:     #eaefe5;
+    --bg-tint:     #e4ecdf;
+    --line:        #d7ddd0;
+    --line-soft:   #e6ebdf;
+    --ink:         #1f2a24;
+    --ink-2:       #47564e;
+    --ink-3:       #7a8a80;
+    --ink-4:       #a5b0a6;
+    --accent:      #2d4a3e;
+    --accent-ink:  #f4f6f1;
+    --accent-soft: #cddbcd;
+    --accent-tint: #e2ecdf;
+    --warn:        #b5894b;
+    --warn-soft:   #f2e7d2;
+    --danger:      #a0493d;
+    --danger-soft: #f3dcd6;
+    --info:        #527a7b;
+    --info-soft:   #d9e6e3;
+    --radius:      8px;
+    --radius-sm:   5px;
+    --radius-lg:   12px;
+
+    /* per-clinic accents (used in calendar headers) */
+    --clinic-1:   #2d4a3e;
+    --clinic-1-tint: #e2ecdf;
+    --clinic-2:   #527a7b;
+    --clinic-2-tint: #d9e6e3;
+    --clinic-3:   #b5894b;
+    --clinic-3-tint: #f2e7d2;
+  }
+  [data-theme="dark"] {
+    --bg:          #141a17;
+    --bg-elev:     #1b231e;
+    --bg-soft:     #1f2924;
+    --bg-tint:     #243029;
+    --line:        #2d3a32;
+    --line-soft:   #253029;
+    --ink:         #e7ece6;
+    --ink-2:       #b6c1b9;
+    --ink-3:       #849185;
+    --ink-4:       #5d6962;
+    --accent:      #8fb89c;
+    --accent-ink:  #0f1513;
+    --accent-soft: #2a3b31;
+    --accent-tint: #1e2a23;
+    --warn:        #d4b07a;
+    --warn-soft:   #3a2f1e;
+    --danger:      #d18577;
+    --danger-soft: #3a241f;
+    --info:        #8eb5b3;
+    --info-soft:   #1f2c2c;
+
+    --clinic-1: #8fb89c;
+    --clinic-1-tint: #1e2a23;
+    --clinic-2: #8eb5b3;
+    --clinic-2-tint: #1f2c2c;
+    --clinic-3: #d4b07a;
+    --clinic-3-tint: #3a2f1e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: "Inter Tight", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-feature-settings: "tnum"; }
+
+  /* ── shell ── */
+  .app { display: grid; grid-template-columns: 232px 1fr; height: 100vh; overflow: hidden; }
+  .sidebar {
+    background: var(--bg-tint);
+    border-right: 1px solid var(--line);
+    padding: 14px 10px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto;
+  }
+  .brand { display:flex; align-items:center; gap:10px; padding:4px 8px 14px 8px; font-weight:700; letter-spacing:-0.02em; font-size:15px; }
+  .brand-mark { width:28px; height:28px; border-radius:7px; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; font-family:"JetBrains Mono", monospace; font-weight:700; font-size:13px; flex-shrink:0; }
+
+  .doc-card { margin: 0 4px 10px; padding: 12px; background: var(--bg-elev); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+  .doc-card .row { display:flex; align-items:center; gap:10px; }
+  .doc-avatar { width:38px; height:38px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; font-weight:600; font-size:13px; flex-shrink:0; font-family:"JetBrains Mono", monospace; }
+  .doc-name { font-weight:600; font-size:13px; line-height:1.25; }
+  .doc-role { font-size:11px; color:var(--ink-3); margin-top:2px; }
+
+  .clinic-list { margin: 8px 4px 0; }
+  .clinic-list .cl-label { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; padding: 0 8px; }
+  .clinic-row { display:flex; align-items:flex-start; gap:8px; padding:7px 8px; border-radius:var(--radius-sm); }
+  .clinic-row + .clinic-row { margin-top:2px; }
+  .clinic-dot { width:8px; height:8px; border-radius:2px; margin-top:6px; flex-shrink:0; }
+  .clinic-name { font-size:12px; font-weight:500; line-height:1.3; }
+  .clinic-room { font-size:11px; color:var(--ink-3); margin-top:1px; font-family:"JetBrains Mono", monospace; }
+
+  .side-label { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; margin:14px 10px 4px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--radius-sm); color:var(--ink-2); cursor:pointer; font-size:13px; user-select:none; }
+  .nav-item:hover { background:var(--bg-soft); color:var(--ink); }
+  .nav-item.active { background:var(--accent); color:var(--accent-ink); }
+  .nav-item .ico { width:16px; height:16px; flex-shrink:0; display:grid; place-items:center; }
+  .nav-item .ico svg { width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .nav-item .cnt { margin-left:auto; font-family:"JetBrains Mono", monospace; font-size:11px; color:var(--ink-3); background:var(--bg-elev); padding:1px 6px; border-radius:4px; }
+  .nav-item.active .cnt { background:rgba(255,255,255,.15); color:var(--accent-ink); }
+
+  .sidebar-foot { margin-top:auto; padding:10px 8px 4px; border-top:1px solid var(--line-soft); }
+  .logout-btn { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:var(--radius-sm); color:var(--ink-2); cursor:pointer; font-size:12.5px; }
+  .logout-btn:hover { background:var(--bg-soft); color:var(--danger); }
+
+  /* ── content ── */
+  .content { display:flex; flex-direction:column; overflow:hidden; }
+  .topbar { display:flex; align-items:center; gap:12px; padding:10px 22px; border-bottom:1px solid var(--line); background:var(--bg-elev); flex-shrink:0; }
+  .breadcrumb { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-3); }
+  .breadcrumb .sep { color:var(--ink-4); }
+  .breadcrumb .here { color:var(--ink); font-weight:500; }
+  .topbar-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+  .icon-btn { width:30px; height:30px; display:grid; place-items:center; border-radius:var(--radius-sm); color:var(--ink-2); cursor:pointer; border:1px solid transparent; background:transparent; flex-shrink:0; }
+  .icon-btn:hover { background:var(--bg-soft); }
+  .btn { font:inherit; cursor:pointer; padding:6px 12px; border-radius:var(--radius-sm); font-size:13px; font-weight:500; display:inline-flex; align-items:center; gap:6px; border:1px solid transparent; white-space:nowrap; }
+  .btn.primary { background:var(--accent); color:var(--accent-ink); }
+  .btn.primary:hover { opacity:.88; }
+  .btn.ghost { background:transparent; color:var(--ink-2); border-color:var(--line); }
+  .btn.ghost:hover { background:var(--bg-soft); color:var(--ink); }
+  .btn.danger { background:var(--danger-soft); color:var(--danger); border-color:transparent; }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+
+  .scroll-area { flex:1; overflow:auto; }
+
+  /* ── theme toggle ── */
+  .theme-toggle { font:inherit; background:var(--bg-elev); border:1px solid var(--line); color:var(--ink-2); padding:5px 11px; border-radius:999px; cursor:pointer; font-size:12px; display:inline-flex; align-items:center; gap:7px; }
+  .theme-toggle:hover { background:var(--bg-soft); }
+  .tgl { width:26px; height:15px; border-radius:999px; background:var(--line); position:relative; transition:background .2s; }
+  .tgl::after { content:""; position:absolute; top:2px; left:2px; width:11px; height:11px; border-radius:50%; background:var(--bg-elev); transition:left .2s; }
+  [data-theme="dark"] .tgl { background:var(--accent); }
+  [data-theme="dark"] .tgl::after { left:13px; background:var(--accent-ink); }
+
+  /* ── tags ── */
+  .tag { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:500; background:var(--bg-soft); color:var(--ink-2); border:1px solid var(--line-soft); }
+  .tag.dot::before { content:""; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  .tag.ok    { background:var(--accent-tint); color:var(--accent); border-color:var(--accent-soft); }
+  .tag.warn  { background:var(--warn-soft); color:var(--warn); border-color:transparent; }
+  .tag.err   { background:var(--danger-soft); color:var(--danger); border-color:transparent; }
+  .tag.info  { background:var(--info-soft); color:var(--info); border-color:transparent; }
+  .tag.mute  { background:var(--bg-soft); color:var(--ink-3); border-color:var(--line-soft); }
+
+  /* ── calendar (matches clinic file) ── */
+  .cal-page { height:100%; display:flex; flex-direction:column; }
+  .cal-nav  { padding:12px 22px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--line-soft); background:var(--bg-elev); flex-shrink:0; flex-wrap:wrap; }
+  .cal-nav .day-label { font-size:14px; font-weight:600; }
+  .cal-nav .day-sub   { color:var(--ink-3); font-size:12.5px; margin-left:8px; }
+  .cal-nav .nav-arrows { display:inline-flex; align-items:center; gap:4px; }
+  .cal-nav .input-el { background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-sm); padding:5px 8px; font:inherit; font-size:12px; color:var(--ink); outline:none; }
+  .cal-nav .legend { display:flex; gap:14px; align-items:center; font-size:12px; color:var(--ink-3); margin-left:auto; flex-wrap:wrap; }
+  .cal-nav .legend span { display:flex; align-items:center; gap:5px; }
+
+  .day-strip { display:inline-flex; gap:4px; }
+  .wday { padding:4px 10px; border-radius:8px; font-size:12px; cursor:pointer; color:var(--ink-2); border:1px solid var(--line-soft); display:flex; flex-direction:column; align-items:center; gap:1px; min-width:50px; background:var(--bg-elev); }
+  .wday .dn { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); }
+  .wday .dd { font-family:"JetBrains Mono", monospace; font-weight:500; }
+  .wday:hover { background:var(--bg-soft); }
+  .wday.today { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  .wday.today .dn { color:var(--accent-ink); opacity:.75; }
+  .wday.has::after { content:""; width:4px; height:4px; border-radius:50%; background:var(--accent); margin-top:2px; }
+  .wday.today.has::after { background:var(--accent-ink); }
+
+  .cal-scroll { flex:1 1 0; min-height:0; overflow:auto; position:relative; background:var(--bg); }
+  .cal-rows { display:flex; flex-direction:column; width:max-content; min-width:100%; }
+  .cal-row-head { display:flex; position:sticky; top:0; z-index:5; background:var(--bg-soft); border-bottom:1px solid var(--line); }
+  .cal-row-body { display:flex; position:relative; }
+
+  .day-head {
+    box-sizing:border-box; padding:10px 14px;
+    border-right:1px solid var(--line);
+    background:var(--bg-soft);
+    display:flex; flex-direction:column; gap:2px;
+    flex-shrink:0;
+  }
+  .day-head.today { background:var(--accent-tint); }
+  .day-head .dh-day { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); }
+  .day-head .dh-num { font-family:"JetBrains Mono", monospace; font-size:18px; font-weight:600; color:var(--ink); }
+  .day-head.today .dh-num { color:var(--accent); }
+  .day-head .dh-clinics { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .clinic-pill { display:inline-flex; align-items:center; gap:5px; padding:2px 7px; border-radius:999px; font-size:10.5px; border:1px solid; font-weight:500; }
+  .clinic-pill .cd { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+  .day-col {
+    position:relative; flex-shrink:0;
+    background:var(--line);
+    border-right:1px solid var(--line-soft);
+    overflow:hidden;
+  }
+  [data-theme="dark"] .day-col { background:#0c100e; }
+  .time-col {
+    position:relative; flex-shrink:0;
+    background:var(--bg);
+    border-right:1px solid var(--line);
+  }
+  .time-label {
+    position:absolute; right:6px;
+    font-family:"JetBrains Mono", monospace; font-size:11px;
+    color:var(--ink-3); transform:translateY(-50%); pointer-events:none;
+  }
+  .time-label-half { font-size:9.5px; color:var(--ink-4); }
+  .work-window {
+    position:absolute; left:0; right:0;
+    background:var(--bg-elev);
+    transition:background .15s;
+  }
+  .work-window.c1 { background: var(--bg-elev); }
+  .work-window.c1::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--clinic-1); }
+  .work-window.c2 { background: var(--bg-elev); }
+  .work-window.c2::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--clinic-2); }
+  .work-window.c3 { background: var(--bg-elev); }
+  .work-window.c3::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--clinic-3); }
+  .work-window-tag { position:absolute; top:6px; left:10px; font-size:10px; color:var(--ink-3); font-weight:500; pointer-events:none; }
+
+  .hour-line { position:absolute; left:0; right:0; height:1px; background:var(--line-soft); pointer-events:none; }
+  .half-line { position:absolute; left:0; right:0; height:1px; opacity:.45; pointer-events:none;
+    background-image:repeating-linear-gradient(90deg, var(--line-soft) 0, var(--line-soft) 4px, transparent 4px, transparent 8px); }
+
+  .appt {
+    position:absolute; left:6px; right:3px;
+    background:var(--accent-tint); color:var(--accent);
+    border:1px solid var(--accent-soft); border-left:3px solid var(--accent);
+    border-radius:4px; padding:4px 8px; font-size:11.5px;
+    overflow:hidden; cursor:pointer;
+    box-sizing:border-box;
+  }
+  .appt.s-done { background:var(--info-soft); color:var(--info); border-color:transparent; border-left-color:var(--info); }
+  .appt.s-cancelled { background:var(--danger-soft); color:var(--danger); border-color:transparent; border-left-color:var(--danger); opacity:.75; }
+  .appt.s-cancelled .pname { text-decoration:line-through; }
+  .pname { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ptime { font-family:"JetBrains Mono", monospace; font-size:10px; opacity:.85; margin-top:1px; }
+  .pdetail { margin-top:2px; opacity:.78; font-size:10.5px; line-height:1.3; }
+
+  /* ── tabs/section content ── */
+  .main { padding:22px 26px; }
+  .page-head { display:flex; align-items:flex-end; gap:14px; margin-bottom:18px; }
+  .page-head h1 { margin:0; font-size:22px; font-weight:700; letter-spacing:-0.025em; }
+  .page-head .page-sub { color:var(--ink-3); font-size:13px; }
+  .page-head .head-actions { margin-left:auto; display:flex; gap:8px; }
+
+  .stat-grid { display:grid; gap:12px; margin-bottom:18px; grid-template-columns:repeat(4, 1fr); }
+  .stat { background:var(--bg-elev); border:1px solid var(--line-soft); border-radius:var(--radius); padding:13px 14px; }
+  .stat .label { color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:500; }
+  .stat .num { font-family:"JetBrains Mono", monospace; font-weight:600; font-size:24px; letter-spacing:-0.02em; color:var(--ink); margin-top:3px; }
+  .stat.highlight { background:var(--accent-tint); border-color:var(--accent-soft); }
+  .stat .sub { font-size:11px; color:var(--ink-3); margin-top:1px; }
+
+  .card { background:var(--bg-elev); border:1px solid var(--line-soft); border-radius:var(--radius); }
+  .card-head { padding:11px 14px; border-bottom:1px solid var(--line-soft); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .card-head h3 { margin:0; font-size:13.5px; font-weight:600; }
+  .card-head .head-note { font-size:12px; color:var(--ink-3); }
+  .card-head .tail { margin-left:auto; display:flex; gap:6px; align-items:center; }
+
+  /* ── table ── */
+  table.list { width:100%; border-collapse:collapse; font-size:13px; }
+  table.list th { text-align:left; font-weight:500; color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:.05em; padding:10px 14px; border-bottom:1px solid var(--line-soft); background:var(--bg-tint); position:sticky; top:0; z-index:1; }
+  table.list td { padding:11px 14px; border-bottom:1px solid var(--line-soft); vertical-align:middle; }
+  table.list tr:hover td { background:var(--bg-soft); cursor:pointer; }
+  table.list tr:last-child td { border-bottom:none; }
+  .cell-name { display:flex; align-items:center; gap:10px; }
+  .av { width:28px; height:28px; border-radius:50%; background:var(--accent-soft); color:var(--accent); display:grid; place-items:center; font-weight:600; font-size:11px; flex-shrink:0; font-family:"JetBrains Mono", monospace; }
+
+  /* my schedule (week grid) */
+  .week-grid { display:grid; grid-template-columns: 80px repeat(7, 1fr); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); border-radius:var(--radius); overflow:hidden; }
+  .wg-cell { background:var(--bg-elev); padding:10px 12px; min-height:60px; }
+  .wg-head { background:var(--bg-tint); font-weight:600; font-size:12px; text-align:center; padding:9px 8px; }
+  .wg-head .wgh-num { font-family:"JetBrains Mono", monospace; font-size:15px; color:var(--ink); }
+  .wg-head .wgh-dow { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em; }
+  .wg-head.today { background:var(--accent-tint); }
+  .wg-head.today .wgh-num { color:var(--accent); }
+  .wg-shift { background:var(--bg-soft); border-radius:5px; padding:8px 10px; font-size:12px; margin-bottom:6px; border-left:3px solid var(--accent); }
+  .wg-shift:last-child { margin-bottom:0; }
+  .wg-shift .wgs-time { font-family:"JetBrains Mono", monospace; font-weight:600; font-size:12px; color:var(--ink); }
+  .wg-shift .wgs-clinic { color:var(--ink-2); margin-top:2px; line-height:1.3; }
+  .wg-shift .wgs-room { color:var(--ink-3); font-family:"JetBrains Mono", monospace; font-size:10.5px; margin-top:2px; }
+  .wg-time { font-family:"JetBrains Mono", monospace; font-size:11px; color:var(--ink-3); padding:9px 10px; background:var(--bg-tint); }
+
+  /* modal */
+  .modal-backdrop { position:fixed; inset:0; background:rgba(15,20,18,.45); backdrop-filter:blur(3px); display:grid; place-items:center; z-index:100; padding:24px; }
+  .modal-box { background:var(--bg-elev); border:1px solid var(--line-soft); border-radius:var(--radius-lg); box-shadow:0 24px 60px rgba(0,0,0,.2); overflow:hidden; width:100%; }
+  .modal-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:14px 18px; border-bottom:1px solid var(--line-soft); }
+  .modal-title { font-weight:600; font-size:15px; }
+  .modal-sub { font-size:12px; color:var(--ink-3); margin-top:2px; }
+  .modal-body { padding:16px 18px; max-height:70vh; overflow:auto; }
+  .modal-foot { padding:12px 18px; border-top:1px solid var(--line-soft); display:flex; align-items:center; gap:8px; }
+
+  .field { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+  .field:last-child { margin-bottom:0; }
+  .field label { font-size:12px; color:var(--ink-2); font-weight:500; }
+  .input-el { background:var(--bg-elev); border:1px solid var(--line); border-radius:var(--radius-sm); padding:7px 10px; font:inherit; font-size:13px; color:var(--ink); outline:none; transition:border-color .15s; width:100%; }
+  .input-el:focus { border-color:var(--accent); }
+  textarea.input-el { resize:vertical; min-height:80px; }
+  .status-select { appearance:none; -webkit-appearance:none; padding-right:32px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8a80' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center; cursor:pointer; }
+
+  /* patient header inside modal */
+  .p-header { padding:16px 18px; background:var(--accent-tint); border-bottom:1px solid var(--line-soft); display:flex; align-items:flex-start; gap:14px; }
+  .p-avatar { width:52px; height:52px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; font-weight:600; font-size:16px; flex-shrink:0; font-family:"JetBrains Mono", monospace; }
+  .p-name { font-size:17px; font-weight:600; letter-spacing:-0.02em; }
+  .p-meta { font-size:12px; color:var(--ink-3); margin-top:3px; }
+
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; margin-bottom:14px; }
+  .info-item .ilabel { font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em; font-weight:500; }
+  .info-item .ival { font-size:13px; margin-top:3px; }
+
+  .timeline { position:relative; padding-left:22px; }
+  .timeline::before { content:""; position:absolute; left:6px; top:6px; bottom:6px; width:1px; background:var(--line); }
+  .tl-item { position:relative; padding-bottom:14px; }
+  .tl-item::before { content:""; position:absolute; left:-20px; top:6px; width:9px; height:9px; border-radius:50%; background:var(--bg-elev); border:2px solid var(--accent); }
+  .tl-date { font-family:"JetBrains Mono", monospace; font-size:11px; color:var(--ink-3); }
+  .tl-title { font-weight:500; font-size:13px; margin:2px 0; }
+  .tl-note { font-size:12px; color:var(--ink-2); padding:7px 10px; background:var(--bg-soft); border-radius:5px; margin-top:4px; }
+
+  /* toast */
+  .toast { position:fixed; bottom:24px; right:24px; z-index:200; padding:10px 16px; border-radius:var(--radius); font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:0 8px 24px rgba(0,0,0,.15); animation:toast-in .2s ease; }
+  .toast.ok { background:var(--accent-tint); color:var(--accent); border:1px solid var(--accent-soft); }
+  .toast.err { background:var(--danger-soft); color:var(--danger); border:1px solid transparent; }
+  @keyframes toast-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  .empty { padding:40px; text-align:center; color:var(--ink-3); font-size:13px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef, useLayoutEffect, useCallback } = React;
+
+// =============================================================================
+// API CLIENT
+// =============================================================================
+const API = 'http://localhost:8420/api';
+const apiFetch = async (path, opts = {}) => {
+  const res = await fetch(API + path, opts);
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+  return json;
+};
+const apiGet   = p     => apiFetch(p);
+const apiPost  = (p,b) => apiFetch(p, { method:'POST',  headers:{'Content-Type':'application/json'}, body: JSON.stringify(b) });
+const apiPatch = (p,b) => apiFetch(p, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(b) });
+
+// per-doctor color palette: cycles c1/c2/c3 across clinics
+const COLOR_KEYS = ['c1','c2','c3'];
+const COLOR_VARS = ['--clinic-1','--clinic-2','--clinic-3'];
+const TINT_VARS  = ['--clinic-1-tint','--clinic-2-tint','--clinic-3-tint'];
+
+function convertPatient(p) {
+  if (!p) return null;
+  const last = (p.last_name && p.last_name !== 'LName_Unknown') ? p.last_name : '';
+  const first= (p.first_name && p.first_name !== 'Name_Unknown') ? p.first_name : '';
+  const mid  = (p.middle_name && p.middle_name !== 'MName_Unknown') ? p.middle_name : '';
+  return {
+    id: p.id,
+    lastName: last,
+    firstName: first,
+    middle: mid,
+    gender: p.gender === 0 ? 'жен.' : p.gender === 1 ? 'муж.' : '—',
+    dob: p.birthDate ? p.birthDate.split('-').reverse().join('.') : '—',
+    phone: (p.phone && p.phone !== 'Phone_Unknown') ? p.phone : '—',
+    insurance: p.insuranceNum || '—',
+  };
+}
+
+function convertDoctor(d, specialty) {
+  if (!d) return null;
+  const last = (d.last_name && d.last_name !== 'LName_Unknown') ? d.last_name : '';
+  const first= (d.first_name && d.first_name !== 'Name_Unknown') ? d.first_name : '';
+  const mid  = (d.middle_name && d.middle_name !== 'MName_Unknown') ? d.middle_name : '';
+  const f = first ? first[0] + '.' : '';
+  const m = mid   ? mid[0]   + '.' : '';
+  return {
+    id: d.id,
+    name: [last, first, mid].filter(Boolean).join(' '),
+    short: `${last} ${f}${m}`.trim(),
+    initials: (last[0] || '') + (first[0] || ''),
+    specialty: specialty || '',
+    phone: (d.phone && d.phone !== 'Phone_Unknown') ? d.phone : '—',
+  };
+}
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+const MONTH_GEN  = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTH_SHORT= ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const DOW_FULL   = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+const DOW_SHORT  = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const DOW_MONDAY = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+function fullName(p) { if (!p) return '—'; return [p.lastName, p.firstName, p.middle].filter(Boolean).join(' ') || '—'; }
+function shortName(p) {
+  if (!p) return '—';
+  const last = p.lastName || '';
+  const f = p.firstName ? p.firstName[0] + '.' : '';
+  const m = p.middle    ? p.middle[0]    + '.' : '';
+  return `${last} ${f}${m}`.trim() || '—';
+}
+function initials(p) { if (!p) return '??'; return (p.lastName?.[0]||'') + (p.firstName?.[0]||''); }
+function calcAge(dobStr, todayIso) {
+  if (!dobStr || dobStr === '—') return '—';
+  const [d,m,y] = dobStr.split('.').map(Number);
+  if (!d || !m || !y) return '—';
+  const t = new Date((todayIso || '2026-04-20') + 'T00:00:00');
+  let age = t.getFullYear() - y;
+  if (t.getMonth()+1 < m || (t.getMonth()+1 === m && t.getDate() < d)) age--;
+  return age;
+}
+function timeToMin(t) { if (!t) return 0; const [h,m] = t.split(':').map(Number); return h*60 + m; }
+function minToTime(min) { const h = Math.floor(min/60), m = min%60; return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); }
+function dowApp(isoDate) {  // Пн=1..Вс=7
+  const j = new Date(isoDate + 'T00:00:00').getDay();
+  return j === 0 ? 7 : j;
+}
+function addDays(isoDate, delta) {
+  const [y,m,d] = isoDate.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + delta);
+  return dt.toISOString().slice(0,10);
+}
+function fmtDateLong(isoDate) {
+  const d = new Date(isoDate + 'T00:00:00');
+  return `${DOW_SHORT[d.getDay()]}, ${d.getDate()} ${MONTH_GEN[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtDateShort(isoDate) {
+  const d = new Date(isoDate + 'T00:00:00');
+  return `${d.getDate()} ${MONTH_SHORT[d.getMonth()]}`;
+}
+function fmtIso(isoDate) {
+  const [y,m,d] = isoDate.split('-');
+  return `${d}.${m}.${y}`;
+}
+function getMondayIso(isoDate) {
+  const dow = dowApp(isoDate); // 1..7
+  return addDays(isoDate, -(dow - 1));
+}
+
+// =============================================================================
+// TOPBAR + SHELL
+// =============================================================================
+const NAV = [
+  { id:'calendar', label:'Календарь',     ico:<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> },
+  { id:'appts',    label:'Мои записи',    ico:<svg viewBox="0 0 24 24"><path d="M9 11H4v9h16v-9h-5"/><path d="M9 11V5a3 3 0 0 1 6 0v6"/></svg> },
+  { id:'schedule', label:'Моё расписание',ico:<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> },
+];
+const VIEW_LABELS = { calendar:'Календарь', appts:'Мои записи', schedule:'Моё расписание' };
+
+function App() {
+  // doctorId from URL /doctor/:id, fallback to localStorage auth
+  const pathMatch = window.location.pathname.match(/^\/doctor\/(\d+)/);
+  const auth = (() => { try { return JSON.parse(localStorage.getItem('medflow_auth') || '{}'); } catch{ return {}; } })();
+  const doctorId = pathMatch ? parseInt(pathMatch[1], 10) : (auth.id ?? 0);
+
+  const [view, setView]       = useState('calendar');
+  const [theme, setTheme]     = useState('light');
+  const [connected, setConnected] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  const [today, setToday]     = useState('2026-04-20');
+  const [doctor, setDoctor]   = useState(null);
+  const [clinics, setClinics] = useState({});
+  const [myClinics, setMyClinics] = useState([]);
+  const [schedule, setSchedule]   = useState([]);
+  const [patients, setPatients]   = useState({});
+  const [appts, setAppts]         = useState([]);
+
+  const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+
+  function showToast(msg, ok = true) {
+    clearTimeout(toastTimer.current);
+    setToast({ msg, ok });
+    toastTimer.current = setTimeout(() => setToast(null), 3000);
+  }
+
+  useEffect(() => {
+    const saved = localStorage.getItem('mf.doc.theme.v2') || 'light';
+    setTheme(saved);
+    document.documentElement.dataset.theme = saved;
+  }, []);
+  function toggleTheme() {
+    const t = theme === 'light' ? 'dark' : 'light';
+    setTheme(t);
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem('mf.doc.theme.v2', t);
+  }
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [doc, todayRes, schedRaw, allRooms, allClinics, allSpecs, allPatients, doctorAppts] = await Promise.all([
+        apiGet(`/doctors/${doctorId}`).catch(() => null),
+        apiGet('/schedules/today').catch(() => null),
+        apiGet(`/schedules/by-doctor/${doctorId}`).catch(() => []),
+        apiGet('/rooms').catch(() => []),
+        apiGet('/clinics').catch(() => []),
+        apiGet('/specializations').catch(() => []),
+        apiGet('/patients').catch(() => []),
+        apiGet('/appointments').catch(() => []),
+      ]);
+
+      const todayDate = todayRes?.today || '2026-04-20';
+      setToday(todayDate);
+
+      const specName = doc ? (allSpecs.find(s => s.id === doc.specialization_id)?.name || '') : '';
+      setDoctor(convertDoctor(doc, specName));
+
+      const roomById   = Object.fromEntries((allRooms||[]).map(r => [r.id, r]));
+      const clinicById = Object.fromEntries((allClinics||[]).map(c => [c.id, c]));
+
+      // unique clinics this doctor works at, in schedule order
+      const clinicIdsInOrder = [];
+      const seenClinics = new Set();
+      for (const s of (schedRaw || [])) {
+        const room = roomById[s.roomId];
+        if (!room) continue;
+        if (!seenClinics.has(room.clinicId)) {
+          seenClinics.add(room.clinicId);
+          clinicIdsInOrder.push(room.clinicId);
+        }
+      }
+
+      const clinicMap = {};
+      const myClinicsArr = [];
+      clinicIdsInOrder.forEach((cid, idx) => {
+        const apiClinic = clinicById[cid];
+        if (!apiClinic) return;
+        const ix = idx % 3;
+        const firstSched = schedRaw.find(s => roomById[s.roomId]?.clinicId === cid);
+        const room = firstSched ? (roomById[firstSched.roomId]?.number || '—') : '—';
+        const entry = {
+          id: cid,
+          name: apiClinic.name,
+          address: apiClinic.address,
+          room,
+          color: COLOR_KEYS[ix],
+          colorVar: COLOR_VARS[ix],
+          tintVar: TINT_VARS[ix],
+        };
+        clinicMap[cid] = entry;
+        myClinicsArr.push(entry);
+      });
+
+      setClinics(clinicMap);
+      setMyClinics(myClinicsArr);
+
+      const sched = (schedRaw || []).map(s => {
+        const room = roomById[s.roomId];
+        const cid  = room?.clinicId ?? -1;
+        return {
+          id: 's' + s.id,
+          rawId: s.id,
+          dayOfWeek: s.dayOfWeek,
+          clinicId: cid,
+          timeFrom: s.timeFrom,
+          timeTo: s.timeTo,
+          slotDuration: s.slotDurationMin || 30,
+          room: room?.number || '—',
+          roomId: s.roomId,
+        };
+      }).filter(s => s.clinicId !== -1);
+      setSchedule(sched);
+
+      // Convert appointments and infer clinicId from a matching schedule entry
+      const apptRows = (Array.isArray(doctorAppts) ? doctorAppts : [])
+        .filter(a => a.doctorId === doctorId)
+        .map(a => {
+          const date      = a.scheduledAt?.slice(0, 10) || '';
+          const timeStart = a.scheduledAt?.slice(11, 16) || '';
+          let cid = -1, dur = 30;
+          if (date && timeStart) {
+            const dow = dowApp(date);
+            const ts  = timeToMin(timeStart);
+            const match = sched.find(s =>
+              s.dayOfWeek === dow &&
+              timeToMin(s.timeFrom) <= ts &&
+              ts < timeToMin(s.timeTo)
+            );
+            if (match) { cid = match.clinicId; dur = match.slotDuration; }
+          }
+          return {
+            id: 'a' + a.id,
+            rawId: a.id,
+            patId: a.patientId,
+            clinicId: cid,
+            date, timeStart,
+            duration: dur,
+            status: a.status,
+            note: a.notes || '',
+          };
+        })
+        .filter(a => a.date && a.timeStart);
+      setAppts(apptRows);
+
+      // Only the patients referenced by this doctor's appointments
+      const refPatIds = new Set(apptRows.map(a => a.patId));
+      const patMap = {};
+      for (const p of (Array.isArray(allPatients) ? allPatients : [])) {
+        if (refPatIds.has(p.id)) patMap[p.id] = convertPatient(p);
+      }
+      setPatients(patMap);
+
+      setConnected(true);
+    } catch (e) {
+      setConnected(false);
+    }
+    setLoading(false);
+  }, [doctorId]);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  async function updateAppt(internalId, patch) {
+    const a = appts.find(x => x.id === internalId);
+    if (!a) return;
+    try {
+      if (patch.status !== undefined && patch.status !== a.status) {
+        await apiPatch(`/appointments/${a.rawId}/status`, { status: patch.status });
+      }
+      if (patch.note !== undefined && patch.note !== a.note) {
+        await apiPatch(`/appointments/${a.rawId}/notes`, { notes: patch.note });
+      }
+      await loadAll();
+      showToast('Запись обновлена');
+    } catch (e) {
+      showToast(e.message || 'Ошибка', false);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('medflow_auth');
+    window.location.href = '/';
+  }
+
+  return (
+    <div className="app">
+      {/* sidebar */}
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">М</div>
+          <span>MedFlow</span>
+        </div>
+
+        <div className="doc-card">
+          <div className="row">
+            <div className="doc-avatar">{doctor?.initials || '??'}</div>
+            <div style={{minWidth:0}}>
+              <div className="doc-name">{doctor?.short || (loading ? 'Загрузка…' : 'Врач не найден')}</div>
+              <div className="doc-role">
+                {doctor ? (doctor.specialty || 'Специальность не указана') : ''}
+                {doctor ? ` · ID ${doctor.id}` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="clinic-list">
+          <div className="cl-label">Я работаю в</div>
+          {myClinics.length === 0
+            ? <div style={{fontSize:11, color:'var(--ink-3)', padding:'4px 8px'}}>{loading ? 'Загрузка…' : 'Нет назначенных клиник'}</div>
+            : myClinics.map(c => (
+              <div key={c.id} className="clinic-row">
+                <div className="clinic-dot" style={{background:`var(${c.colorVar})`}}></div>
+                <div style={{minWidth:0, flex:1}}>
+                  <div className="clinic-name">{c.name}</div>
+                  <div className="clinic-room">каб. № {c.room}</div>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <div className="side-label">Меню</div>
+        {NAV.map(n => (
+          <div key={n.id} className={`nav-item${view===n.id?' active':''}`} onClick={() => setView(n.id)}>
+            <span className="ico">{n.ico}</span>
+            <span>{n.label}</span>
+            {n.id==='appts' && <span className="cnt">{appts.length}</span>}
+            {n.id==='schedule' && <span className="cnt">{schedule.length}</span>}
+          </div>
+        ))}
+
+        <div className="sidebar-foot">
+          <div className="logout-btn" onClick={logout}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Выйти</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* content */}
+      <div className="content">
+        <div className="topbar">
+          <div className="breadcrumb">
+            <span>MedFlow</span>
+            <span className="sep">/</span>
+            <span>Кабинет врача</span>
+            <span className="sep">/</span>
+            <span className="here">{VIEW_LABELS[view]}</span>
+          </div>
+          <div className="topbar-right">
+            <button className="theme-toggle" onClick={toggleTheme}>
+              <span className="tgl"></span>
+              <span>{theme==='dark'?'Тёмная':'Светлая'}</span>
+            </button>
+          </div>
+        </div>
+
+        {!connected && (
+          <div style={{background:'var(--warn-soft)', borderBottom:'1px solid var(--warn)', padding:'7px 22px', fontSize:12, color:'var(--warn)', display:'flex', alignItems:'center', gap:8, flexShrink:0}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            Нет соединения с сервером (localhost:8420) — данные могут быть неактуальны
+            <button className="btn ghost" style={{padding:'2px 8px',fontSize:11}} onClick={loadAll}>Повторить</button>
+          </div>
+        )}
+
+        <div className="scroll-area" style={{display:'flex', flexDirection:'column'}}>
+          {loading ? (
+            <div style={{display:'grid', placeItems:'center', height:'60vh', color:'var(--ink-3)', fontSize:14}}>Загрузка данных…</div>
+          ) : (
+            <>
+              {view==='calendar' && <CalendarView today={today} schedule={schedule} clinics={clinics} patients={patients} appts={appts} onApptClick={a => setModal({type:'appt', id:a.id})} />}
+              {view==='appts'    && <AppointmentsView today={today} clinics={clinics} myClinics={myClinics} patients={patients} appts={appts} onApptClick={a => setModal({type:'appt', id:a.id})} />}
+              {view==='schedule' && <ScheduleView today={today} schedule={schedule} clinics={clinics} myClinics={myClinics} />}
+            </>
+          )}
+        </div>
+      </div>
+
+      {modal?.type === 'appt' && (() => {
+        const a = appts.find(x => x.id === modal.id);
+        if (!a) return null;
+        return (
+          <ApptModal
+            appt={a}
+            today={today}
+            clinics={clinics}
+            patients={patients}
+            onClose={() => setModal(null)}
+            onSave={(patch) => { updateAppt(modal.id, patch); setModal(null); }}
+            onShowPatient={(patId) => setModal({type:'patient', patId, returnTo:modal})}
+          />
+        );
+      })()}
+      {modal?.type === 'patient' && (() => {
+        const p = patients[modal.patId];
+        if (!p) return null;
+        return (
+          <PatientModal
+            patient={p}
+            today={today}
+            clinics={clinics}
+            appts={appts.filter(a => a.patId === modal.patId)}
+            onClose={() => modal.returnTo ? setModal(modal.returnTo) : setModal(null)}
+          />
+        );
+      })()}
+
+      {toast && <div className={`toast ${toast.ok?'ok':'err'}`}>{toast.msg}</div>}
+    </div>
+  );
+}
+
+// =============================================================================
+// CALENDAR VIEW — точно тот же формат что в файле клиники, только колонки = дни
+//   и каждый день делится на блоки по клиникам
+// =============================================================================
+const PXM = 2;             // 2px per minute
+const DAY_H = 24 * 60 * PXM;
+const TIME_W = 56;
+const DAYS_VISIBLE_DEFAULT = 3;
+const COL_W_DEFAULT = 320;
+
+function CalendarView({ today, schedule, clinics, patients, appts, onApptClick }) {
+  const [anchorDate, setAnchorDate] = useState(today);
+  const [daysVisible, setDaysVisible] = useState(DAYS_VISIBLE_DEFAULT);
+  const scrollRef = useRef(null);
+
+  useEffect(() => { setAnchorDate(today); }, [today]);
+
+  const visibleDates = Array.from({length:daysVisible}, (_,i) => addDays(anchorDate, i));
+
+  // workhours range across visible days (for default scroll)
+  const workMins = visibleDates.flatMap(d => {
+    const dow = dowApp(d);
+    return schedule.filter(s => s.dayOfWeek === dow).flatMap(s => [timeToMin(s.timeFrom), timeToMin(s.timeTo)]);
+  });
+  const earliest = workMins.length ? Math.min(...workMins) : 9*60;
+
+  useLayoutEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = Math.max(0, earliest * PXM - 40);
+    }
+  }, [anchorDate, daysVisible]);
+
+  // 30-min slots: 48 per day
+  const halfSlots = Array.from({length:48}, (_, i) => i*30);
+
+  function shiftDays(delta) { setAnchorDate(addDays(anchorDate, delta)); }
+
+  // пилюля выбора количества дней
+  const dayChoices = [1, 2, 3, 5];
+
+  return (
+    <div className="cal-page">
+      <div className="cal-nav">
+        <div className="nav-arrows">
+          <button className="btn ghost" style={{padding:'5px 10px', minWidth:32}} onClick={() => shiftDays(-1)} title="День назад">←</button>
+          <button className="btn ghost" style={{padding:'5px 10px', fontSize:12}} onClick={() => setAnchorDate(today)}>Сегодня</button>
+          <button className="btn ghost" style={{padding:'5px 10px', minWidth:32}} onClick={() => shiftDays(1)} title="День вперёд">→</button>
+        </div>
+
+        <div>
+          <span className="day-label">{fmtDateLong(visibleDates[0])}</span>
+          {daysVisible > 1 && <span className="day-sub">— {fmtDateLong(visibleDates[daysVisible-1])}</span>}
+        </div>
+
+        <input type="date" className="input-el" style={{width:148}}
+          value={anchorDate} onChange={e => e.target.value && setAnchorDate(e.target.value)} />
+
+        <div style={{display:'flex', gap:4, alignItems:'center', marginLeft:'8px'}}>
+          <span style={{fontSize:11, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing:'.05em', marginRight:4}}>Дней</span>
+          {dayChoices.map(n => (
+            <button key={n} className="btn ghost"
+              style={{padding:'4px 9px', fontSize:12, borderColor: n===daysVisible ? 'var(--accent)' : 'var(--line)', background: n===daysVisible ? 'var(--accent-tint)' : 'transparent', color: n===daysVisible ? 'var(--accent)' : 'var(--ink-2)'}}
+              onClick={() => setDaysVisible(n)}>{n}</button>
+          ))}
+        </div>
+
+        <div className="legend">
+          <span><span className="tag ok dot"></span>Запланирована</span>
+          <span><span className="tag info dot"></span>Завершена</span>
+          <span><span className="tag err dot"></span>Отменена</span>
+        </div>
+      </div>
+
+      <div className="cal-scroll" ref={scrollRef}>
+        <div className="cal-rows">
+          {/* header row */}
+          <div className="cal-row-head">
+            <div style={{width:TIME_W, flexShrink:0, background:'var(--bg-soft)', borderRight:'1px solid var(--line)'}}></div>
+            {visibleDates.map(date => {
+              const isToday = date === today;
+              const dow = dowApp(date);
+              const sched = schedule.filter(s => s.dayOfWeek === dow).sort((a,b)=>timeToMin(a.timeFrom)-timeToMin(b.timeFrom));
+              const d = new Date(date+'T00:00:00');
+              return (
+                <div key={date} className={`day-head${isToday?' today':''}`} style={{width:COL_W_DEFAULT}}>
+                  <div className="dh-day">{DOW_FULL[d.getDay()]}</div>
+                  <div className="dh-num">{d.getDate()} {MONTH_GEN[d.getMonth()]}</div>
+                  <div className="dh-clinics">
+                    {sched.length === 0
+                      ? <span style={{fontSize:11, color:'var(--ink-3)'}}>Выходной</span>
+                      : sched.map(s => {
+                          const c = clinics[s.clinicId];
+                          if (!c) return null;
+                          return (
+                            <span key={s.id} className="clinic-pill" style={{
+                              background:`var(${c.tintVar})`, color:`var(${c.colorVar})`, borderColor:`var(${c.colorVar})`}}>
+                              <span className="cd" style={{background:`var(${c.colorVar})`}}></span>
+                              {c.name.split(',')[0]} · {s.timeFrom}–{s.timeTo}
+                            </span>
+                          );
+                        })
+                    }
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* body */}
+          <div className="cal-row-body">
+            <div className="time-col" style={{width:TIME_W, height:DAY_H}}>
+              {halfSlots.map(totalMin => {
+                const hh = String(Math.floor(totalMin/60)).padStart(2,'0');
+                const isHalf = (totalMin % 60) === 30;
+                return (
+                  <div key={totalMin}
+                    className={isHalf ? 'time-label time-label-half' : 'time-label'}
+                    style={{top: totalMin*PXM}}>
+                    {isHalf ? hh+':30' : hh+':00'}
+                  </div>
+                );
+              })}
+            </div>
+
+            {visibleDates.map(date => {
+              const dow = dowApp(date);
+              const sched = schedule.filter(s => s.dayOfWeek === dow);
+              const dayAppts = appts.filter(a => a.date === date);
+
+              return (
+                <div key={date} className="day-col" style={{width:COL_W_DEFAULT, height:DAY_H}}>
+                  {/* clinic work-windows */}
+                  {sched.map(s => {
+                    const c = clinics[s.clinicId];
+                    if (!c) return null;
+                    const fromMin = timeToMin(s.timeFrom);
+                    const toMin = timeToMin(s.timeTo);
+                    return (
+                      <div key={s.id} className={`work-window ${c.color}`}
+                        style={{top:fromMin*PXM, height:(toMin-fromMin)*PXM, zIndex:1}}>
+                        <span className="work-window-tag" style={{color:`var(${c.colorVar})`}}>
+                          {c.name.split(',')[0]} · каб. № {s.room}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                  {/* hour lines */}
+                  {halfSlots.map(totalMin => {
+                    if (totalMin === 0) return null;
+                    const isHalf = (totalMin % 60) === 30;
+                    return (
+                      <div key={totalMin}
+                        className={isHalf ? 'half-line' : 'hour-line'}
+                        style={{top:totalMin*PXM, zIndex:2}} />
+                    );
+                  })}
+
+                  {/* appointments */}
+                  {dayAppts.map(a => {
+                    const startMin = timeToMin(a.timeStart);
+                    const endMin = startMin + (a.duration || 30);
+                    const pat = patients[a.patId];
+                    const c = clinics[a.clinicId];
+                    const cls = 'appt s-' + (a.status === 0 ? 'planned' : a.status === 1 ? 'done' : 'cancelled');
+                    const dur = endMin - startMin;
+                    return (
+                      <div key={a.id} className={cls}
+                        style={{top: startMin*PXM + 1, height: dur*PXM - 2, zIndex:3}}
+                        onClick={(e) => { e.stopPropagation(); onApptClick(a); }}>
+                        <div className="pname">{pat ? shortName(pat) : 'Пациент #' + a.patId}</div>
+                        <div className="ptime">{a.timeStart}–{minToTime(endMin)}</div>
+                        {dur >= 40 && c && <div className="pdetail">{c.name.split(',')[0]} · каб. № {c.room}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// MY APPOINTMENTS — таблица всей истории
+// =============================================================================
+function AppointmentsView({ today, clinics, myClinics, patients, appts, onApptClick }) {
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all | upcoming | done | cancelled
+  const [clinicFilter, setClinicFilter] = useState('all');
+
+  const filtered = useMemo(() => {
+    return appts
+      .filter(a => {
+        if (statusFilter === 'upcoming' && !(a.status === 0 && a.date >= today)) return false;
+        if (statusFilter === 'done' && a.status !== 1) return false;
+        if (statusFilter === 'cancelled' && a.status !== 2) return false;
+        if (clinicFilter !== 'all' && String(a.clinicId) !== clinicFilter) return false;
+        if (search) {
+          const p = patients[a.patId];
+          if (!p) return false;
+          const haystack = (fullName(p) + ' ' + (p.insurance||'') + ' ' + (p.phone||'')).toLowerCase();
+          if (!haystack.includes(search.toLowerCase())) return false;
+        }
+        return true;
+      })
+      .sort((a,b) => (b.date + b.timeStart).localeCompare(a.date + a.timeStart));
+  }, [appts, search, statusFilter, clinicFilter, patients, today]);
+
+  const counts = {
+    total: appts.length,
+    upcoming: appts.filter(a => a.status === 0 && a.date >= today).length,
+    done: appts.filter(a => a.status === 1).length,
+    cancelled: appts.filter(a => a.status === 2).length,
+  };
+
+  return (
+    <div className="main">
+      <div className="page-head">
+        <div>
+          <h1>Мои записи</h1>
+          <div className="page-sub">История всех приёмов · {appts.length} записей</div>
+        </div>
+      </div>
+
+      <div className="stat-grid">
+        <div className="stat highlight">
+          <span className="label">Предстоящие</span>
+          <div className="num">{counts.upcoming}</div>
+          <div className="sub">запланировано</div>
+        </div>
+        <div className="stat">
+          <span className="label">Завершено</span>
+          <div className="num">{counts.done}</div>
+          <div className="sub">всего приёмов</div>
+        </div>
+        <div className="stat">
+          <span className="label">Отменено</span>
+          <div className="num">{counts.cancelled}</div>
+          <div className="sub">пропущено / отменено</div>
+        </div>
+        <div className="stat">
+          <span className="label">Всего</span>
+          <div className="num">{counts.total}</div>
+          <div className="sub">за всё время</div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <div style={{display:'flex', alignItems:'center', gap:8, background:'var(--bg-soft)', border:'1px solid var(--line-soft)', borderRadius:'var(--radius-sm)', padding:'5px 10px', flex:1, maxWidth:340}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input style={{border:'none', background:'transparent', font:'inherit', fontSize:13, outline:'none', flex:1, color:'var(--ink)'}}
+              placeholder="Поиск по ФИО, полису, телефону…"
+              value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <select className="input-el status-select" style={{width:160, padding:'5px 28px 5px 10px'}} value={clinicFilter} onChange={e => setClinicFilter(e.target.value)}>
+            <option value="all">Все клиники</option>
+            {myClinics.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select className="input-el status-select" style={{width:170, padding:'5px 28px 5px 10px'}} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+            <option value="all">Все статусы</option>
+            <option value="upcoming">Предстоящие</option>
+            <option value="done">Завершённые</option>
+            <option value="cancelled">Отменённые</option>
+          </select>
+          <span className="head-note" style={{marginLeft:'auto'}}>{filtered.length} {filtered.length===1?'запись':'записей'}</span>
+        </div>
+
+        {filtered.length === 0
+          ? <div className="empty">Записей не найдено</div>
+          : (
+            <table className="list">
+              <thead>
+                <tr>
+                  <th style={{width:120}}>Дата</th>
+                  <th style={{width:90}}>Время</th>
+                  <th>Пациент</th>
+                  <th>Клиника</th>
+                  <th style={{width:140}}>Статус</th>
+                  <th>Заметка</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(a => {
+                  const pat = patients[a.patId];
+                  const c = clinics[a.clinicId];
+                  const endMin = timeToMin(a.timeStart) + (a.duration || 30);
+                  const statusTag = a.status === 0 ? <span className="tag ok dot">Запланирована</span>
+                                  : a.status === 1 ? <span className="tag info dot">Завершена</span>
+                                  : <span className="tag err dot">Отменена</span>;
+                  return (
+                    <tr key={a.id} onClick={() => onApptClick(a)}>
+                      <td>
+                        <div style={{fontWeight:500}}>{fmtDateShort(a.date)}</div>
+                        <div style={{fontSize:11, color:'var(--ink-3)'}}>{DOW_FULL[new Date(a.date+'T00:00:00').getDay()]}</div>
+                      </td>
+                      <td className="mono" style={{fontSize:12}}>{a.timeStart}–{minToTime(endMin)}</td>
+                      <td className="cell-name">
+                        <div className="av">{pat ? initials(pat) : '??'}</div>
+                        <div>
+                          <div style={{fontWeight:500}}>{pat ? fullName(pat) : 'Пациент #' + a.patId}</div>
+                          {pat && <div className="mono" style={{fontSize:11, color:'var(--ink-3)'}}>{pat.dob} · {pat.gender}</div>}
+                        </div>
+                      </td>
+                      <td>
+                        {c ? (
+                          <div style={{display:'flex', alignItems:'center', gap:6, fontSize:12}}>
+                            <span style={{width:8, height:8, borderRadius:2, background:`var(${c.colorVar})`, flexShrink:0}}></span>
+                            <div>
+                              <div>{c.name}</div>
+                              <div style={{fontSize:11, color:'var(--ink-3)'}} className="mono">каб. № {c.room}</div>
+                            </div>
+                          </div>
+                        ) : <span style={{color:'var(--ink-4)'}}>—</span>}
+                      </td>
+                      <td>{statusTag}</td>
+                      <td style={{fontSize:12, color: a.note ? 'var(--ink-2)' : 'var(--ink-4)', maxWidth:280}}>
+                        {a.note ? (a.note.length > 60 ? a.note.slice(0,60)+'…' : a.note) : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )
+        }
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// MY SCHEDULE — рабочее расписание на неделю (read-only)
+// =============================================================================
+function ScheduleView({ today, schedule, clinics, myClinics }) {
+  const [weekStart, setWeekStart] = useState(getMondayIso(today));
+
+  useEffect(() => { setWeekStart(getMondayIso(today)); }, [today]);
+
+  const weekDates = Array.from({length:7}, (_, i) => addDays(weekStart, i));
+
+  const totalHours = schedule.reduce((sum, s) => sum + (timeToMin(s.timeTo) - timeToMin(s.timeFrom))/60, 0);
+
+  // build schedule per day
+  const byDow = {};
+  schedule.forEach(s => {
+    if (!byDow[s.dayOfWeek]) byDow[s.dayOfWeek] = [];
+    byDow[s.dayOfWeek].push(s);
+  });
+  Object.values(byDow).forEach(arr => arr.sort((a,b) => timeToMin(a.timeFrom) - timeToMin(b.timeFrom)));
+
+  function shiftWeek(delta) {
+    setWeekStart(addDays(weekStart, delta * 7));
+  }
+
+  return (
+    <div className="main">
+      <div className="page-head">
+        <div>
+          <h1>Моё расписание</h1>
+          <div className="page-sub">Постоянное рабочее расписание · всего {totalHours} часов в неделю</div>
+        </div>
+        <div className="head-actions">
+          <button className="btn ghost" onClick={() => shiftWeek(-1)}>← Пред.</button>
+          <button className="btn ghost" onClick={() => setWeekStart(getMondayIso(today))}>Текущая неделя</button>
+          <button className="btn ghost" onClick={() => shiftWeek(1)}>След. →</button>
+        </div>
+      </div>
+
+      <div className="stat-grid" style={{gridTemplateColumns:'repeat(3, 1fr)'}}>
+        <div className="stat highlight">
+          <span className="label">Часов в неделю</span>
+          <div className="num">{totalHours}</div>
+          <div className="sub">{schedule.length} рабочих смен</div>
+        </div>
+        <div className="stat">
+          <span className="label">Клиник</span>
+          <div className="num">{myClinics.length}</div>
+          <div className="sub">в этом расписании</div>
+        </div>
+        <div className="stat">
+          <span className="label">Слот приёма</span>
+          <div className="num">{schedule[0]?.slotDuration || 30} <span style={{fontSize:14, color:'var(--ink-3)'}}>мин</span></div>
+          <div className="sub">средняя длительность</div>
+        </div>
+      </div>
+
+      <div className="card" style={{marginBottom:18}}>
+        <div className="card-head">
+          <h3>Неделя {fmtDateShort(weekStart)} – {fmtDateShort(addDays(weekStart, 6))}</h3>
+          <span className="head-note">Расписание повторяется по дням недели</span>
+        </div>
+        <div style={{padding:14}}>
+          <div className="week-grid">
+            <div className="wg-head" style={{fontSize:11, color:'var(--ink-3)'}}>Время</div>
+            {weekDates.map((d, i) => {
+              const date = new Date(d+'T00:00:00');
+              const dow = i + 1;
+              const isToday = d === today;
+              return (
+                <div key={d} className={`wg-head${isToday?' today':''}`}>
+                  <div className="wgh-dow">{DOW_MONDAY[i]}</div>
+                  <div className="wgh-num">{date.getDate()}</div>
+                </div>
+              );
+            })}
+
+            <div className="wg-time">Утро<br/>День<br/>Вечер</div>
+            {[1,2,3,4,5,6,7].map(dow => {
+              const shifts = byDow[dow] || [];
+              return (
+                <div key={dow} className="wg-cell">
+                  {shifts.length === 0
+                    ? <div style={{color:'var(--ink-4)', fontSize:11, textAlign:'center', paddingTop:14}}>Выходной</div>
+                    : shifts.map(s => {
+                        const c = clinics[s.clinicId];
+                        const hours = (timeToMin(s.timeTo) - timeToMin(s.timeFrom))/60;
+                        const colorVar = c ? c.colorVar : '--accent';
+                        const tintVar  = c ? c.tintVar  : '--accent-tint';
+                        return (
+                          <div key={s.id} className="wg-shift" style={{borderLeftColor:`var(${colorVar})`, background:`var(${tintVar})`}}>
+                            <div className="wgs-time" style={{color:`var(${colorVar})`}}>{s.timeFrom} – {s.timeTo}</div>
+                            <div className="wgs-clinic">{c ? c.name : '—'}</div>
+                            <div className="wgs-room">каб. № {s.room} · {hours} ч</div>
+                          </div>
+                        );
+                      })
+                  }
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* legend by clinic */}
+      <div className="card">
+        <div className="card-head"><h3>Мои клиники</h3></div>
+        <div style={{padding:14, display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:10}}>
+          {myClinics.map(c => {
+            const myShifts = schedule.filter(s => s.clinicId === c.id);
+            const hrs = myShifts.reduce((sum,s) => sum + (timeToMin(s.timeTo) - timeToMin(s.timeFrom))/60, 0);
+            return (
+              <div key={c.id} style={{padding:'12px 14px', background:`var(${c.tintVar})`, borderLeft:`3px solid var(${c.colorVar})`, borderRadius:'var(--radius-sm)'}}>
+                <div style={{fontWeight:600, fontSize:13.5, color:`var(${c.colorVar})`}}>{c.name}</div>
+                <div style={{fontSize:12, color:'var(--ink-2)', marginTop:2}}>{c.address}</div>
+                <div style={{fontSize:12, marginTop:8, display:'flex', gap:14, color:'var(--ink-2)'}}>
+                  <span><b className="mono">{myShifts.length}</b> смен</span>
+                  <span><b className="mono">{hrs} ч</b> в неделю</span>
+                  <span className="mono" style={{color:'var(--ink-3)'}}>каб. № {c.room}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// APPT MODAL
+// =============================================================================
+function ApptModal({ appt, today, clinics, patients, onClose, onSave, onShowPatient }) {
+  const [status, setStatus] = useState(appt.status);
+  const [note, setNote] = useState(appt.note || '');
+  const dirty = status !== appt.status || note !== (appt.note || '');
+
+  useEffect(() => {
+    const h = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  const pat = patients[appt.patId];
+  const c = clinics[appt.clinicId];
+  const endMin = timeToMin(appt.timeStart) + (appt.duration || 30);
+
+  return (
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box" style={{maxWidth:540}}>
+        <div className="modal-head">
+          <div style={{flex:1}}>
+            <div className="modal-title">Запись на приём</div>
+            <div className="modal-sub">{fmtDateLong(appt.date)} · {appt.timeStart}–{minToTime(endMin)}</div>
+          </div>
+          <button className="icon-btn" onClick={onClose}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div className="modal-body">
+          <div className="field">
+            <label>Пациент</label>
+            <div style={{display:'flex', alignItems:'center', gap:10, padding:'8px 10px', border:'1px solid var(--line)', borderRadius:'var(--radius-sm)', background:'var(--bg-soft)'}}>
+              <div className="av" style={{width:32, height:32, fontSize:11}}>{pat ? initials(pat) : '??'}</div>
+              <div style={{flex:1, minWidth:0}}>
+                <div style={{fontWeight:600}}>
+                  {pat ? (
+                    <span style={{color:'var(--accent)', cursor:'pointer', textDecoration:'underline', textDecorationStyle:'dashed', textUnderlineOffset:2}}
+                      onClick={() => onShowPatient(pat.id)}>{fullName(pat)}</span>
+                  ) : ('Пациент #' + appt.patId)}
+                </div>
+                {pat && <div className="mono" style={{fontSize:11, color:'var(--ink-3)'}}>{pat.dob} · {pat.gender} · ОМС {pat.insurance}</div>}
+              </div>
+            </div>
+          </div>
+
+          <div className="field">
+            <label>Клиника и кабинет</label>
+            <div style={{display:'flex', alignItems:'center', gap:10, padding:'8px 10px', border:'1px solid var(--line)', borderRadius:'var(--radius-sm)'}}>
+              {c && <span style={{width:10, height:10, borderRadius:2, background:`var(${c.colorVar})`, flexShrink:0}}></span>}
+              <div style={{flex:1}}>
+                <div style={{fontWeight:500}}>{c?.name || '—'}</div>
+                {c && <div style={{fontSize:11.5, color:'var(--ink-3)'}}>{c.address}</div>}
+              </div>
+              {c && <span className="mono" style={{fontSize:12, padding:'2px 8px', background:'var(--bg-soft)', borderRadius:4, color:'var(--ink-3)'}}>каб. № {c.room}</span>}
+            </div>
+          </div>
+
+          <div className="field">
+            <label>Статус записи</label>
+            <select className="input-el status-select" value={status} onChange={e => setStatus(parseInt(e.target.value))}>
+              <option value={0}>Запланирована</option>
+              <option value={1}>Завершена</option>
+              <option value={2}>Отменена</option>
+            </select>
+          </div>
+
+          <div className="field">
+            <label>Заметка к приёму</label>
+            <textarea className="input-el" rows={4} value={note} onChange={e => setNote(e.target.value)} placeholder="Жалобы, осмотр, диагноз, рекомендации, назначения…" />
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn ghost" onClick={onClose}>Закрыть</button>
+          <button className="btn primary" disabled={!dirty} onClick={() => onSave({status, note})} style={{marginLeft:'auto'}}>Сохранить</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// PATIENT MODAL
+// =============================================================================
+function PatientModal({ patient, today, clinics, appts, onClose }) {
+  useEffect(() => {
+    const h = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  const sorted = appts.slice().sort((a,b) => (b.date+b.timeStart).localeCompare(a.date+a.timeStart));
+
+  return (
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box" style={{maxWidth:640}}>
+        <div className="p-header">
+          <div className="p-avatar">{initials(patient)}</div>
+          <div style={{flex:1, minWidth:0}}>
+            <div className="p-name">{fullName(patient)}</div>
+            <div className="p-meta">{patient.gender} · {calcAge(patient.dob, today)} лет · {patient.dob}</div>
+          </div>
+          <button className="icon-btn" onClick={onClose} style={{color:'var(--ink-2)'}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div className="modal-body">
+          <div className="info-grid">
+            <div className="info-item">
+              <div className="ilabel">Телефон</div>
+              <div className="ival mono">{patient.phone}</div>
+            </div>
+            <div className="info-item">
+              <div className="ilabel">Полис ОМС</div>
+              <div className="ival mono">{patient.insurance}</div>
+            </div>
+          </div>
+
+          <div style={{display:'flex', alignItems:'baseline', gap:10, marginTop:6, marginBottom:10}}>
+            <div style={{fontSize:13.5, fontWeight:600}}>История посещений</div>
+            <div style={{fontSize:12, color:'var(--ink-3)'}}>всего {sorted.length}</div>
+          </div>
+
+          {sorted.length === 0
+            ? <div className="empty" style={{padding:20}}>Нет посещений</div>
+            : (
+              <div className="timeline">
+                {sorted.map(a => {
+                  const c = clinics[a.clinicId];
+                  const endMin = timeToMin(a.timeStart) + (a.duration || 30);
+                  const statusTag = a.status === 0 ? <span className="tag ok" style={{fontSize:10}}>Запланирована</span>
+                                  : a.status === 1 ? <span className="tag info" style={{fontSize:10}}>Завершена</span>
+                                  : <span className="tag err" style={{fontSize:10}}>Отменена</span>;
+                  return (
+                    <div key={a.id} className="tl-item">
+                      <div className="tl-date">{fmtIso(a.date)} · {a.timeStart}–{minToTime(endMin)} · {statusTag}</div>
+                      <div className="tl-title" style={{display:'flex', alignItems:'center', gap:8}}>
+                        {c && <span style={{width:8, height:8, borderRadius:2, background:`var(${c.colorVar})`}}></span>}
+                        {c ? `${c.name} · каб. № ${c.room}` : '—'}
+                      </div>
+                      {a.note && <div className="tl-note">{a.note}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

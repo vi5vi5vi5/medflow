@@ -1,0 +1,1991 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>MedFlow — Кабинет пациента</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#2d4a3e" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:          #f4f6f1;
+    --bg-elev:     #ffffff;
+    --bg-soft:     #eaefe5;
+    --bg-tint:     #e4ecdf;
+    --line:        #d7ddd0;
+    --line-soft:   #e6ebdf;
+    --ink:         #1f2a24;
+    --ink-2:       #47564e;
+    --ink-3:       #7a8a80;
+    --ink-4:       #a5b0a6;
+    --accent:      #2d4a3e;
+    --accent-ink:  #f4f6f1;
+    --accent-soft: #cddbcd;
+    --accent-tint: #e2ecdf;
+    --warn:        #b5894b;
+    --warn-soft:   #f2e7d2;
+    --danger:      #a0493d;
+    --danger-soft: #f3dcd6;
+    --info:        #527a7b;
+    --info-soft:   #d9e6e3;
+    --radius:      10px;
+    --radius-sm:   6px;
+    --radius-lg:   14px;
+    --safe-bot:    env(safe-area-inset-bottom, 0px);
+    --safe-top:    env(safe-area-inset-top, 0px);
+  }
+  [data-theme="dark"] {
+    --bg:          #141a17;
+    --bg-elev:     #1b231e;
+    --bg-soft:     #1f2924;
+    --bg-tint:     #243029;
+    --line:        #2d3a32;
+    --line-soft:   #253029;
+    --ink:         #e7ece6;
+    --ink-2:       #b6c1b9;
+    --ink-3:       #849185;
+    --ink-4:       #5d6962;
+    --accent:      #8fb89c;
+    --accent-ink:  #0f1513;
+    --accent-soft: #2a3b31;
+    --accent-tint: #1e2a23;
+    --warn:        #d4b07a;
+    --warn-soft:   #3a2f1e;
+    --danger:      #d18577;
+    --danger-soft: #3a241f;
+    --info:        #8eb5b3;
+    --info-soft:   #1f2c2c;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior-y: none; }
+  body {
+    font-family: "Inter Tight", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-feature-settings: "tnum"; }
+  button { font-family: inherit; }
+  input, select, textarea { font-family: inherit; font-size: 16px; /* prevent zoom on iOS */ }
+
+  /* ── MOBILE shell ─────────────────────────────────────── */
+  .app.mobile {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+    position: relative;
+    box-shadow: 0 0 0 1px var(--line-soft);
+  }
+
+  /* ── DESKTOP shell ────────────────────────────────────── */
+  .app.desktop {
+    display: grid;
+    grid-template-columns: 248px 1fr;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .app.desktop .sidebar {
+    background: var(--bg-tint);
+    border-right: 1px solid var(--line);
+    padding: 14px 10px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto;
+  }
+  .app.desktop .brand { display:flex; align-items:center; gap:10px; padding:4px 8px 14px 8px; font-weight:700; letter-spacing:-0.02em; font-size:15px; }
+  .app.desktop .pat-card { margin: 0 4px 10px; padding: 12px; background: var(--bg-elev); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+  .app.desktop .pat-card .row { display:flex; align-items:center; gap:10px; }
+  .app.desktop .pat-avatar { width:40px; height:40px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; font-weight:600; font-size:14px; flex-shrink:0; font-family:"JetBrains Mono", monospace; }
+  .app.desktop .pat-name { font-weight:600; font-size:13px; line-height:1.25; }
+  .app.desktop .pat-sub  { font-size:11px; color:var(--ink-3); margin-top:2px; }
+  .app.desktop .side-label { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; margin:14px 10px 4px; }
+  .app.desktop .nav-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--radius-sm); color:var(--ink-2); cursor:pointer; font-size:13px; user-select:none; background: transparent; border: none; width: 100%; text-align: left; }
+  .app.desktop .nav-item:hover { background:var(--bg-soft); color:var(--ink); }
+  .app.desktop .nav-item.active { background:var(--accent); color:var(--accent-ink); }
+  .app.desktop .nav-item .ico { width:16px; height:16px; flex-shrink:0; display:grid; place-items:center; }
+  .app.desktop .nav-item .ico svg { width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .app.desktop .nav-item .cnt { margin-left:auto; font-family:"JetBrains Mono", monospace; font-size:11px; color:var(--ink-3); background:var(--bg-elev); padding:1px 6px; border-radius:4px; }
+  .app.desktop .nav-item.active .cnt { background:rgba(255,255,255,.15); color:var(--accent-ink); }
+  .app.desktop .sidebar-foot { margin-top:auto; padding-top:10px; border-top:1px solid var(--line-soft); }
+  .app.desktop .cta-book { margin: 12px 4px 6px; height: 40px; padding: 0 14px; flex-shrink: 0; }
+  .app.desktop .cta-book svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .app.desktop .nav-item { white-space: nowrap; }
+  .app.desktop .content { display:flex; flex-direction:column; overflow:hidden; }
+  .app.desktop .desk-topbar { display:flex; align-items:center; gap:12px; padding:10px 24px; border-bottom:1px solid var(--line); background:var(--bg-elev); flex-shrink:0; }
+  .app.desktop .breadcrumb { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-3); white-space:nowrap; }
+  .app.desktop .breadcrumb .sep { color:var(--ink-4); }
+  .app.desktop .breadcrumb .here { color:var(--ink); font-weight:500; }
+  .app.desktop .desk-topbar .right { margin-left:auto; display:flex; gap:6px; align-items:center; }
+  .app.desktop .scroll-area { flex:1; overflow:auto; padding-bottom: 32px; }
+  .app.desktop .main { padding: 28px 32px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+  /* desktop layout helpers */
+  .desk-grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  .desk-grid-2 > div { min-width: 0; }
+  @media (max-width: 980px) {
+    .desk-grid-2 { grid-template-columns: 1fr; }
+  }
+  .desk-quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 980px) {
+    .desk-quick-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* desktop booking layout */
+  .book-desk { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 980px) {
+    .book-desk { grid-template-columns: 1fr; }
+  }
+  .book-side {
+    background: var(--bg-elev);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: sticky; top: 16px;
+  }
+  .book-side .bs-step { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: var(--radius-sm); font-size: 13px; color: var(--ink-3); }
+  .book-side .bs-step.done { color: var(--ink-2); }
+  .book-side .bs-step.active { background: var(--accent-tint); color: var(--accent); font-weight: 600; }
+  .book-side .bs-num { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 600; background: var(--bg-soft); color: var(--ink-3); flex-shrink: 0; font-family: "JetBrains Mono", monospace; }
+  .book-side .bs-step.active .bs-num { background: var(--accent); color: var(--accent-ink); }
+  .book-side .bs-step.done .bs-num { background: var(--accent-soft); color: var(--accent); }
+  .book-side .bs-step.done .bs-num::after { content: "✓"; }
+  .book-side .bs-step.done .bs-num span { display: none; }
+  .book-side .bs-val { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+  /* desktop appts list — taller card */
+  .app.desktop .appt-card { padding: 16px; gap: 16px; }
+  .app.desktop .appt-date { width: 64px; padding: 10px 6px; }
+  .app.desktop .appt-date .d-num { font-size: 22px; }
+
+  /* desktop bigger date strip */
+  .app.desktop .date-strip { gap: 6px; padding-bottom: 4px; flex-wrap: nowrap; }
+  .app.desktop .date-cell { width: 72px; }
+
+  /* desktop slot grid wider */
+  .app.desktop .slots-grid { grid-template-columns: repeat(6, 1fr); }
+  @media (max-width: 980px) {
+    .app.desktop .slots-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* ── topbar (mobile) ──────────────────────────────────── */
+  .app.mobile .topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--line);
+    padding: calc(var(--safe-top) + 12px) 16px 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .topbar .brand { display:flex; align-items:center; gap:9px; font-weight:700; letter-spacing:-0.02em; font-size:15px; }
+  .brand-mark { width:28px; height:28px; border-radius:7px; background:var(--accent); color:var(--accent-ink); display:grid; place-items:center; font-family:"JetBrains Mono", monospace; font-weight:700; font-size:13px; flex-shrink:0; }
+  .topbar .right { margin-left:auto; display:flex; gap:6px; align-items:center; }
+  .icon-btn { width:36px; height:36px; display:grid; place-items:center; border-radius:var(--radius-sm); color:var(--ink-2); cursor:pointer; border:1px solid transparent; background:transparent; flex-shrink:0; }
+  .icon-btn:hover, .icon-btn:active { background:var(--bg-soft); }
+  .icon-btn svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+
+  .page-title { font-weight:600; font-size:16px; letter-spacing:-0.01em; }
+  .back-btn { display:flex; align-items:center; gap:4px; padding:0 10px 0 6px; height:36px; border-radius:var(--radius-sm); color:var(--ink-2); cursor:pointer; background:transparent; border:none; font-size:14px; }
+  .back-btn:hover { background:var(--bg-soft); }
+  .back-btn svg { width:18px; height:18px; }
+
+  /* ── content (mobile) ─────────────────────────────────── */
+  .app.mobile .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: calc(72px + var(--safe-bot));
+    -webkit-overflow-scrolling: touch;
+  }
+  .app.mobile .main { padding: 16px; }
+
+  /* ── bottom tab bar (mobile) ──────────────────────────── */
+  .tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 40;
+    max-width: 480px; margin: 0 auto;
+    background: var(--bg-elev);
+    border-top: 1px solid var(--line);
+    padding: 6px 4px calc(6px + var(--safe-bot));
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .tab {
+    background: transparent; border: none; cursor: pointer;
+    padding: 8px 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    color: var(--ink-3); font-size: 11px;
+    border-radius: var(--radius-sm);
+    position: relative;
+  }
+  .tab.active { color: var(--accent); }
+  .tab svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .tab .badge { position:absolute; top:4px; right: calc(50% - 18px); background:var(--accent); color:var(--accent-ink); font-family:"JetBrains Mono", monospace; font-size:9.5px; font-weight:600; padding:1px 5px; border-radius:999px; min-width:16px; text-align:center; line-height:1.2; }
+
+  /* ── buttons ──────────────────────────────────────────── */
+  .btn { font:inherit; cursor:pointer; padding:11px 16px; border-radius:var(--radius-sm); font-size:14px; font-weight:500; display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid transparent; white-space:nowrap; min-height:44px; }
+  .btn.primary { background:var(--accent); color:var(--accent-ink); }
+  .btn.primary:active { opacity:.85; }
+  .btn.ghost { background:transparent; color:var(--ink-2); border-color:var(--line); }
+  .btn.ghost:active { background:var(--bg-soft); }
+  .btn.danger { background:var(--danger-soft); color:var(--danger); border-color:transparent; }
+  .btn.block { width: 100%; }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+
+  /* ── cards ────────────────────────────────────────────── */
+  .card { background:var(--bg-elev); border:1px solid var(--line-soft); border-radius:var(--radius); }
+  .card + .card { margin-top: 12px; }
+  .card-pad { padding: 14px; }
+  .card-head { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 10px; }
+  .card-head h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .card-head .head-note { font-size: 12px; color: var(--ink-3); margin-left: auto; }
+
+  /* ── tags ─────────────────────────────────────────────── */
+  .tag { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:500; background:var(--bg-soft); color:var(--ink-2); border:1px solid var(--line-soft); }
+  .tag.dot::before { content:""; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  .tag.ok    { background:var(--accent-tint); color:var(--accent); border-color:var(--accent-soft); }
+  .tag.warn  { background:var(--warn-soft); color:var(--warn); border-color:transparent; }
+  .tag.err   { background:var(--danger-soft); color:var(--danger); border-color:transparent; }
+  .tag.info  { background:var(--info-soft); color:var(--info); border-color:transparent; }
+
+  /* ── home greeting ────────────────────────────────────── */
+  .greeting { padding: 4px 4px 14px; }
+  .greeting .hello { color: var(--ink-3); font-size: 13px; }
+  .greeting .name { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+
+  .upcoming-banner {
+    background: linear-gradient(135deg, var(--accent) 0%, color-mix(in oklab, var(--accent), black 20%) 100%);
+    color: var(--accent-ink);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    position: relative; overflow: hidden;
+  }
+  [data-theme="dark"] .upcoming-banner { background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent-tint) 100%); color: var(--ink); border:1px solid var(--accent-soft); }
+  .upcoming-banner::after { content:""; position:absolute; right:-30px; top:-30px; width:140px; height:140px; border-radius:50%; background: rgba(255,255,255,.06); }
+  .ub-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; opacity:.8; }
+  .ub-when { font-size:18px; font-weight:600; margin-top:4px; }
+  .ub-doc  { font-size:13.5px; opacity:.9; margin-top:6px; }
+  .ub-loc  { font-size:12px; opacity:.75; margin-top:3px; font-family:"JetBrains Mono", monospace; }
+  .ub-actions { display:flex; gap:8px; margin-top:14px; position:relative; z-index:1; }
+  .ub-btn { padding:8px 14px; border-radius:var(--radius-sm); font-size:13px; font-weight:500; border:none; cursor:pointer; }
+  .ub-btn.solid { background:var(--accent-ink); color:var(--accent); }
+  .ub-btn.outline { background:transparent; color:var(--accent-ink); border:1px solid rgba(255,255,255,.35); }
+  [data-theme="dark"] .ub-btn.solid { background:var(--accent); color:var(--accent-ink); }
+  [data-theme="dark"] .ub-btn.outline { color:var(--ink); border-color:var(--ink-3); }
+
+  .upcoming-empty {
+    background: var(--bg-elev); border:1px dashed var(--line); border-radius: var(--radius-lg);
+    padding: 22px 16px; text-align: center;
+  }
+  .upcoming-empty .ue-ico { width:48px; height:48px; margin: 0 auto 10px; border-radius:50%; background: var(--accent-tint); color: var(--accent); display:grid; place-items:center; }
+  .upcoming-empty .ue-ico svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; }
+  .upcoming-empty h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .upcoming-empty p { margin: 0 0 14px; font-size: 13px; color: var(--ink-3); }
+
+  /* quick actions */
+  .quick-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quick {
+    background: var(--bg-elev);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex; flex-direction: column; gap: 8px;
+    text-align: left; cursor: pointer; color: var(--ink);
+    min-height: 100px;
+  }
+  .quick:active { background: var(--bg-soft); }
+  .quick .q-ico { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; }
+  .quick .q-ico svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .quick.ac1 .q-ico { background: var(--accent-tint); color: var(--accent); }
+  .quick.ac2 .q-ico { background: var(--info-soft); color: var(--info); }
+  .quick.ac3 .q-ico { background: var(--warn-soft); color: var(--warn); }
+  .quick.ac4 .q-ico { background: var(--bg-soft); color: var(--ink-2); }
+  .quick .q-title { font-weight: 600; font-size: 14px; }
+  .quick .q-sub { font-size: 12px; color: var(--ink-3); margin-top: -3px; }
+
+  /* sections */
+  .section-head { display:flex; align-items:center; padding: 0 4px 8px; margin-top: 18px; }
+  .section-head h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; }
+  .section-head .more { margin-left:auto; color: var(--accent); font-size: 13px; font-weight: 500; cursor: pointer; background: none; border: none; padding: 4px 6px; }
+
+  /* appointment list item */
+  .appt-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex; gap: 12px; align-items: flex-start;
+    cursor: pointer;
+  }
+  .appt-card + .appt-card { margin-top: 8px; }
+  .appt-card:active { background: var(--bg-soft); }
+  .appt-date {
+    flex-shrink: 0;
+    width: 56px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-soft);
+    border: 1px solid var(--line-soft);
+    text-align: center;
+    padding: 8px 4px;
+  }
+  .appt-card.next .appt-date { background: var(--accent-tint); border-color: var(--accent-soft); }
+  .appt-card.done .appt-date { background: var(--info-soft); border-color: transparent; }
+  .appt-card.cancelled .appt-date { background: var(--bg-soft); border-color: var(--line-soft); opacity: .7; }
+  .appt-date .d-num { font-family:"JetBrains Mono", monospace; font-weight:600; font-size:18px; color: var(--ink); line-height: 1; }
+  .appt-date .d-mon { font-size:10px; color: var(--ink-3); text-transform:uppercase; letter-spacing:.06em; margin-top:3px; }
+  .appt-card.next .appt-date .d-num { color: var(--accent); }
+  .appt-card.done .appt-date .d-num { color: var(--info); }
+
+  .appt-info { flex: 1; min-width: 0; }
+  .appt-time { font-family:"JetBrains Mono", monospace; font-size: 12px; color: var(--ink-3); }
+  .appt-doc  { font-size: 14.5px; font-weight: 600; margin-top: 2px; letter-spacing: -0.01em; }
+  .appt-spec { font-size: 12.5px; color: var(--ink-2); margin-top: 1px; }
+  .appt-loc  { font-size: 12px; color: var(--ink-3); margin-top: 6px; display: flex; align-items: center; gap: 5px; }
+  .appt-loc svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.7; flex-shrink: 0; }
+  .appt-card.cancelled .appt-doc { text-decoration: line-through; color: var(--ink-3); }
+
+  .appt-status-row { display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap: wrap; }
+
+  /* ── booking flow steps ──────────────────────────────── */
+  .stepper { display:flex; gap: 6px; padding: 12px 16px 0; }
+  .step-pip { flex:1; height: 4px; border-radius: 2px; background: var(--line); }
+  .step-pip.done { background: var(--accent); }
+  .step-pip.active { background: var(--accent); }
+
+  .step-title { padding: 14px 4px 12px; }
+  .step-title .step-eyebrow { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .07em; }
+  .step-title h2 { margin: 4px 0 0; font-size: 22px; font-weight: 700; letter-spacing: -0.025em; }
+  .step-title .step-sub { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+
+  .pick-list { display: flex; flex-direction: column; gap: 8px; }
+  .pick {
+    background: var(--bg-elev);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    color: var(--ink);
+    min-height: 56px;
+  }
+  .pick:active { background: var(--bg-soft); }
+  .pick.selected { border-color: var(--accent); background: var(--accent-tint); }
+  .pick .p-ico { width: 38px; height: 38px; border-radius: 9px; background: var(--bg-soft); color: var(--ink-2); display: grid; place-items: center; flex-shrink: 0; }
+  .pick.selected .p-ico { background: var(--accent); color: var(--accent-ink); }
+  .pick .p-ico svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .pick .p-main { flex: 1; min-width: 0; }
+  .pick .p-title { font-weight: 600; font-size: 14.5px; }
+  .pick .p-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+  .pick .p-arrow { color: var(--ink-4); flex-shrink: 0; }
+  .pick .p-arrow svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* date strip */
+  .date-strip {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding: 4px 4px 14px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .date-strip::-webkit-scrollbar { display: none; }
+  .date-cell {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    width: 64px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .date-cell.disabled { opacity: .35; cursor: not-allowed; }
+  .date-cell.selected { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .date-cell .dc-dow { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+  .date-cell.selected .dc-dow { color: var(--accent-ink); opacity: .8; }
+  .date-cell .dc-day { font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 18px; margin-top: 3px; }
+  .date-cell .dc-mon { font-size: 10px; color: var(--ink-3); margin-top: 1px; text-transform: lowercase; }
+  .date-cell.selected .dc-mon { color: var(--accent-ink); opacity: .8; }
+  .date-cell.has::after { content: ""; display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin: 4px auto 0; }
+  .date-cell.selected.has::after { background: var(--accent-ink); }
+
+  /* slots grid */
+  .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .slot-btn {
+    background: var(--bg-elev);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    padding: 12px 6px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .slot-btn:active { background: var(--bg-soft); }
+  .slot-btn.selected { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .slot-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+  .slot-section + .slot-section { margin-top: 16px; }
+  .slot-section h5 { margin: 0 0 8px; font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
+
+  /* sticky bottom action */
+  .step-foot {
+    position: sticky; bottom: 0;
+    padding: 12px 16px calc(12px + var(--safe-bot));
+    background: var(--bg-elev);
+    border-top: 1px solid var(--line);
+    display: flex; gap: 8px;
+  }
+
+  /* confirm summary */
+  .summary { background: var(--bg-elev); border: 1px solid var(--line-soft); border-radius: var(--radius); overflow: hidden; }
+  .summary-row { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: flex-start; gap: 12px; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .sr-ico { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-soft); color: var(--ink-2); display: grid; place-items: center; flex-shrink: 0; }
+  .summary-row .sr-ico svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .summary-row .sr-label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; }
+  .summary-row .sr-val { font-size: 14.5px; font-weight: 500; margin-top: 3px; }
+  .summary-row .sr-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+
+  /* segmented (filter) */
+  .segmented { display: flex; gap: 4px; background: var(--bg-soft); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--line-soft); }
+  .seg {
+    flex: 1; background: transparent; border: none;
+    padding: 8px 4px; font-size: 13px; font-weight: 500; color: var(--ink-3);
+    border-radius: 4px; cursor: pointer; min-height: 36px;
+  }
+  .seg.on { background: var(--bg-elev); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+
+  /* profile rows */
+  .profile-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    text-align: center;
+  }
+  .profile-avatar { width: 76px; height: 76px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 24px; margin: 0 auto 12px; }
+  .profile-name { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .profile-meta { font-size: 13px; color: var(--ink-3); margin-top: 3px; }
+
+  .info-list { display: flex; flex-direction: column; }
+  .info-list .il-row { display: flex; align-items: center; gap: 14px; padding: 14px; border-bottom: 1px solid var(--line-soft); }
+  .info-list .il-row:last-child { border-bottom: none; }
+  .info-list .il-ico { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-soft); color: var(--ink-2); display: grid; place-items: center; flex-shrink: 0; }
+  .info-list .il-ico svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .info-list .il-main { flex: 1; min-width: 0; }
+  .info-list .il-label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; }
+  .info-list .il-val { font-size: 14px; margin-top: 2px; }
+
+  .menu-list .ml-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px; cursor: pointer;
+    border-bottom: 1px solid var(--line-soft);
+    background: var(--bg-elev);
+    width: 100%; text-align: left; border-left: none; border-right: none; border-top: none;
+    color: var(--ink); font-size: 14px;
+  }
+  .menu-list .ml-row:active { background: var(--bg-soft); }
+  .menu-list .ml-row:first-child { border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg); }
+  .menu-list .ml-row:last-child { border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); border-bottom: 1px solid var(--line-soft); }
+  .menu-list { border: 1px solid var(--line-soft); border-radius: var(--radius-lg); overflow: hidden; }
+  .ml-row .ml-ico { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-soft); color: var(--ink-2); display: grid; place-items: center; flex-shrink: 0; }
+  .ml-row .ml-ico svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .ml-row .ml-arrow { color: var(--ink-4); margin-left: auto; }
+  .ml-row .ml-arrow svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; }
+  .ml-row.danger { color: var(--danger); }
+  .ml-row.danger .ml-ico { background: var(--danger-soft); color: var(--danger); }
+
+  /* sheet (bottom modal) */
+  .sheet-backdrop { position: fixed; inset: 0; background: rgba(15,20,18,.5); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet {
+    background: var(--bg-elev);
+    width: 100%; max-width: 480px;
+    border-top-left-radius: 18px; border-top-right-radius: 18px;
+    padding: 8px 16px calc(20px + var(--safe-bot));
+    max-height: 85vh; overflow-y: auto;
+    animation: sheet-in .25s cubic-bezier(.2,.9,.4,1);
+  }
+  @keyframes sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet-grab { width: 36px; height: 4px; background: var(--line); border-radius: 2px; margin: 6px auto 14px; }
+  .sheet h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; letter-spacing: -0.015em; }
+  .sheet .sh-sub { color: var(--ink-3); font-size: 13px; margin-bottom: 14px; }
+  .sheet .sh-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* timeline (history detail) */
+  .detail-block { padding: 14px; }
+  .detail-block + .detail-block { border-top: 1px solid var(--line-soft); }
+  .detail-block .label { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; }
+  .detail-block .val { font-size: 14.5px; }
+
+  /* toast */
+  .toast { position: fixed; bottom: calc(80px + var(--safe-bot)); left: 50%; transform: translateX(-50%); z-index: 200; padding: 10px 16px; border-radius: var(--radius); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.15); animation: toast-in .2s ease; max-width: 90%; }
+  .toast.ok { background: var(--accent); color: var(--accent-ink); }
+  .toast.err { background: var(--danger); color: white; }
+  .toast svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  @keyframes toast-in { from { opacity:0; transform: translate(-50%, 10px); } to { opacity:1; transform: translate(-50%, 0); } }
+
+  /* inline info note (e.g. confirm step) */
+  .inline-note { padding: 14px 4px; font-size: 12px; color: var(--ink-3); display: flex; gap: 8px; align-items: flex-start; }
+  .inline-note svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
+
+  .empty { padding: 50px 20px; text-align: center; color: var(--ink-3); font-size: 14px; }
+  .empty .e-ico { width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; background: var(--bg-soft); color: var(--ink-3); display: grid; place-items: center; }
+  .empty .e-ico svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+  .empty h4 { margin: 0 0 4px; font-size: 16px; color: var(--ink-2); font-weight: 600; }
+  .empty p { margin: 0 0 16px; font-size: 13px; }
+
+  /* skeleton (while "loading") — purely cosmetic */
+  .skel { background: linear-gradient(90deg, var(--bg-soft) 0%, var(--bg-tint) 50%, var(--bg-soft) 100%); background-size: 200% 100%; border-radius: 6px; animation: shimmer 1.4s linear infinite; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+function useViewport() {
+  const [w, setW] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1024);
+  useEffect(() => {
+    const onR = () => setW(window.innerWidth);
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, []);
+  return w >= 900 ? 'desktop' : 'mobile';
+}
+
+// =============================================================================
+// API CLIENT
+// =============================================================================
+const API = 'http://localhost:8420/api';
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API + path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+const apiGet   = p     => apiFetch(p);
+const apiPost  = (p,b) => apiFetch(p, { method:'POST',  headers:{'Content-Type':'application/json'}, body: JSON.stringify(b) });
+const apiPatch = (p,b) => apiFetch(p, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(b) });
+
+// =============================================================================
+// MUTABLE GLOBALS — заполняются из API при загрузке. find*() читают отсюда.
+// =============================================================================
+let TODAY = '2026-04-20';
+let NOW   = '05:00';
+let SPECIALIZATIONS = [];
+let CLINICS = [];
+let DOCTORS = [];
+let SCHEDULES = [];
+let ROOMS = [];
+
+// Подсказка к специализации — отображается под названием на шаге выбора
+const SPEC_HINTS = {
+  'Терапевт':       'Общий приём, направления, больничные',
+  'Кардиолог':      'Сердечно-сосудистая система',
+  'Невролог':       'Головные боли, нарушения сна',
+  'Офтальмолог':    'Зрение, осмотр глазного дна',
+  'Эндокринолог':   'Гормоны, сахарный диабет',
+  'ЛОР':            'Ухо, горло, нос',
+  'Дерматолог':     'Кожа, родинки, аллергии',
+  'Гастроэнтеролог':'ЖКТ, печень, поджелудочная',
+  'Хирург':         'Травмы, операции, осмотры',
+  'Педиатр':        'Детский врач',
+  'Стоматолог':     'Зубы и полость рта',
+  'Уролог':         'Мочеполовая система',
+  'Гинеколог':      'Женское здоровье',
+};
+function specHint(name) { return SPEC_HINTS[name] || 'Записаться на приём'; }
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+const MONTH_GEN  = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTH_SHORT= ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const DOW_FULL   = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+const DOW_SHORT  = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+
+// Сервис заполняет неуказанные поля сентинелами вида *_Unknown — прячем их
+function cleanField(v, sentinel) {
+  if (!v) return '';
+  if (sentinel && v === sentinel) return '';
+  return v;
+}
+function fullName(p) {
+  if (!p) return '—';
+  const last   = cleanField(p.last_name,   'LName_Unknown');
+  const first  = cleanField(p.first_name,  'Name_Unknown');
+  const middle = cleanField(p.middle_name, 'MName_Unknown');
+  return [last, first, middle].filter(Boolean).join(' ').trim() || '—';
+}
+function shortDocName(d) {
+  if (!d) return '—';
+  const last   = cleanField(d.last_name,   'LName_Unknown');
+  const first  = cleanField(d.first_name,  'Name_Unknown');
+  const middle = cleanField(d.middle_name, 'MName_Unknown');
+  const fi = first  ? first[0]  + '.' : '';
+  const mi = middle ? middle[0] + '.' : '';
+  return `${last}${(fi||mi)?' ':''}${fi}${mi}`.trim() || '—';
+}
+function initials(p) {
+  if (!p) return '?';
+  const last  = cleanField(p.last_name,  'LName_Unknown');
+  const first = cleanField(p.first_name, 'Name_Unknown');
+  return (((last[0]||'') + (first[0]||'')).toUpperCase()) || '?';
+}
+
+function calcAge(isoBirth) {
+  if (!isoBirth) return null;
+  const [y,m,d] = isoBirth.split('-').map(Number);
+  if (!y) return null;
+  const t = new Date(TODAY+'T00:00:00');
+  let age = t.getFullYear() - y;
+  if (t.getMonth()+1 < m || (t.getMonth()+1 === m && t.getDate() < d)) age--;
+  return age;
+}
+function ageWord(n) {
+  const m100 = n % 100;
+  if (m100 >= 11 && m100 <= 14) return 'лет';
+  const m10 = n % 10;
+  if (m10 === 1) return 'год';
+  if (m10 >= 2 && m10 <= 4) return 'года';
+  return 'лет';
+}
+function genderLabel(g) { return g === 0 ? 'женский' : g === 1 ? 'мужской' : '—'; }
+function fmtPhone(p) { return cleanField(p, 'Phone_Unknown') || '—'; }
+function dowApp(isoDate) { const j = new Date(isoDate + 'T00:00:00').getDay(); return j === 0 ? 7 : j; }
+function timeToMin(t) { if (!t) return 0; const [h,m] = t.split(':').map(Number); return h*60 + m; }
+function addDays(isoDate, delta) {
+  const [y,m,d] = isoDate.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + delta);
+  return dt.toISOString().slice(0,10);
+}
+function fmtDateLong(isoDate) {
+  if (!isoDate) return '';
+  const d = new Date(isoDate + 'T00:00:00');
+  return `${DOW_FULL[d.getDay()]}, ${d.getDate()} ${MONTH_GEN[d.getMonth()]}`;
+}
+function fmtDateShort(isoDate) {
+  if (!isoDate) return '';
+  const d = new Date(isoDate + 'T00:00:00');
+  return `${d.getDate()} ${MONTH_SHORT[d.getMonth()]}`;
+}
+function fmtDateMedium(isoDate) {
+  if (!isoDate) return '';
+  const d = new Date(isoDate + 'T00:00:00');
+  return `${d.getDate()} ${MONTH_GEN[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtIsoBirth(iso) {
+  if (!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+function parseScheduled(s) {
+  if (!s) return { date: '', time: '' };
+  const [date, time] = s.split(' ');
+  return { date: date || '', time: time || '' };
+}
+function isFuture(scheduledAt)   { return scheduledAt > `${TODAY} ${NOW}`; }
+function isPast(scheduledAt)     { return scheduledAt < `${TODAY} ${NOW}`; }
+function isUpcoming(appt) {
+  return appt && appt.status === 0 && appt.scheduledAt >= `${TODAY} ${NOW}`;
+}
+function relativeDay(isoDate) {
+  if (!isoDate) return null;
+  if (isoDate === TODAY) return 'сегодня';
+  if (isoDate === addDays(TODAY, 1)) return 'завтра';
+  if (isoDate === addDays(TODAY, -1)) return 'вчера';
+  const d = new Date(isoDate+'T00:00:00');
+  const t = new Date(TODAY+'T00:00:00');
+  const diff = Math.round((d - t) / (1000*60*60*24));
+  if (diff > 1 && diff < 7) return `через ${diff} ${diff===1?'день':diff<5?'дня':'дней'}`;
+  if (diff < -1 && diff > -7) return `${Math.abs(diff)} ${Math.abs(diff)<5?'дня':'дней'} назад`;
+  return null;
+}
+
+function findDoctor(id) { return DOCTORS.find(d => d.id === id) || null; }
+function findSpec(id)   { return SPECIALIZATIONS.find(s => s.id === id) || null; }
+function findClinic(id) { return CLINICS.find(c => c.id === id) || null; }
+function findRoom(id)   { return ROOMS.find(r => r.id === id) || null; }
+
+// Подбираем клинику приёма по расписанию доктора и кабинету: ищем расписание,
+// которое покрывает (doctorId, dayOfWeek, time), и берём clinicId этого кабинета.
+function clinicIdForAppt(appt) {
+  const { date, time } = parseScheduled(appt.scheduledAt);
+  if (!date || !time) return -1;
+  const dow = dowApp(date);
+  const tMin = timeToMin(time);
+  const sched = SCHEDULES.find(s =>
+    s.doctorId === appt.doctorId && s.dayOfWeek === dow &&
+    timeToMin(s.timeFrom) <= tMin && tMin < timeToMin(s.timeTo));
+  if (!sched) return -1;
+  const room = findRoom(sched.roomId);
+  return room?.clinicId ?? -1;
+}
+
+// =============================================================================
+// ICONS
+// =============================================================================
+const I = {
+  home:     <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-3v-7H10v7H7a2 2 0 0 1-2-2z"/></svg>,
+  calendar: <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
+  plus:     <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>,
+  user:     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>,
+  bell:     <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>,
+  arrow:    <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>,
+  chev:     <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>,
+  back:     <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>,
+  pin:      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  clock:    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+  doc:      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>,
+  stetho:   <svg viewBox="0 0 24 24"><path d="M6 2v6a4 4 0 0 0 8 0V2"/><path d="M6 8a4 4 0 0 1-2 7.4M14 8a4 4 0 0 0 2 7.4"/><circle cx="20" cy="12" r="2"/><path d="M16 15v3a4 4 0 0 0 4 4"/></svg>,
+  search:   <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>,
+  phone:    <svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.4 2.1l-1.3 1.3a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/></svg>,
+  mail:     <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>,
+  shield:   <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  cake:     <svg viewBox="0 0 24 24"><path d="M20 21V11a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10"/><path d="M4 16h16M12 4v5M9 4v5M15 4v5"/></svg>,
+  edit:     <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>,
+  logout:   <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>,
+  moon:     <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>,
+  info:     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>,
+  check:    <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>,
+  x:        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+  empty:    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16h6"/></svg>,
+  history:  <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 8v5l3 2"/></svg>,
+};
+
+// =============================================================================
+// APP
+// =============================================================================
+function App() {
+  const [theme, setTheme] = useState('light');
+  const mode = useViewport();
+  const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(true);
+
+  // patientId из URL (/patient/:id), иначе из localStorage (medflow_auth)
+  const pathMatch = typeof window !== 'undefined'
+    ? window.location.pathname.match(/^\/patient\/(\d+)/) : null;
+  const auth = (() => { try { return JSON.parse(localStorage.getItem('medflow_auth') || '{}'); } catch { return {}; } })();
+  const patientId = pathMatch ? parseInt(pathMatch[1], 10) : (auth.id ?? 0);
+
+  const [patient, setPatient] = useState(null);
+  const [appts, setAppts] = useState([]);
+  const [apptsLoading, setApptsLoading] = useState(false);
+  const [, setDataTick] = useState(0);
+
+  // route: home | appts | book | profile  + booking sub-state
+  const [route, setRoute] = useState('home');
+  const [apptsFilter, setApptsFilter] = useState('upcoming'); // upcoming | past | all
+  const [apptsRefreshTick, setApptsRefreshTick] = useState(0);
+  const [bookingState, setBookingState] = useState(null);
+  const [detailApptId, setDetailApptId] = useState(null);
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
+  const [toast, setToast] = useState(null);
+  const toastT = useRef(null);
+
+  function showToast(msg, ok = true) {
+    clearTimeout(toastT.current);
+    setToast({ msg, ok });
+    toastT.current = setTimeout(() => setToast(null), 2800);
+  }
+
+  useEffect(() => {
+    const saved = localStorage.getItem('mf.patient.theme.v1') || 'light';
+    setTheme(saved);
+    document.documentElement.dataset.theme = saved;
+  }, []);
+  function toggleTheme() {
+    const t = theme === 'light' ? 'dark' : 'light';
+    setTheme(t);
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem('mf.patient.theme.v1', t);
+  }
+
+  function logout() {
+    try { localStorage.removeItem('medflow_auth'); } catch {}
+    window.location.href = '/';
+  }
+
+  // ── ЛЕНИВЫЕ КЕШИ ────────────────────────────────────────────────────────────
+  // На старте грузим только пациента, today/now и его клинику. Всё остальное —
+  // по требованию (когда открывается соответствующий экран).
+  async function ensureDoctors(ids) {
+    const want = [...new Set(ids.filter(id => id != null))];
+    const missing = want.filter(id => !DOCTORS.find(d => d.id === id));
+    if (missing.length === 0) return;
+    const got = await Promise.all(missing.map(id => apiGet(`/doctors/${id}`).catch(() => null)));
+    got.filter(Boolean).forEach(d => { if (!DOCTORS.find(x => x.id === d.id)) DOCTORS.push(d); });
+    setDataTick(x => x + 1);
+  }
+  async function ensureSpecs(ids) {
+    const want = [...new Set(ids.filter(id => id != null))];
+    const missing = want.filter(id => !SPECIALIZATIONS.find(s => s.id === id));
+    if (missing.length === 0) return;
+    const got = await Promise.all(missing.map(id => apiGet(`/specializations/${id}`).catch(() => null)));
+    got.filter(Boolean).forEach(s => { if (!SPECIALIZATIONS.find(x => x.id === s.id)) SPECIALIZATIONS.push(s); });
+    setDataTick(x => x + 1);
+  }
+  // Расписание + кабинеты КЛИНИКИ ПАЦИЕНТА (для booking-а и определения клиники приёма)
+  async function ensureClinicSchedulesAndRooms() {
+    if (SCHEDULES.length > 0 && ROOMS.length > 0) return;
+    const cId = patient?.clinic_id;
+    if (cId == null || cId < 0) return;
+    const [rms, scheds] = await Promise.all([
+      apiGet(`/rooms/by-clinic/${cId}`).catch(() => []),
+      apiGet('/schedules').catch(() => []),
+    ]);
+    ROOMS = Array.isArray(rms) ? rms : [];
+    const roomIdSet = new Set(ROOMS.map(r => r.id));
+    SCHEDULES = (Array.isArray(scheds) ? scheds : []).filter(s => roomIdSet.has(s.roomId));
+    setDataTick(x => x + 1);
+  }
+  // Подгружает докторов и их специализации, фигурирующие в расписании клиники
+  async function ensureClinicDoctorsAndSpecs() {
+    await ensureClinicSchedulesAndRooms();
+    const docIds = [...new Set(SCHEDULES.map(s => s.doctorId))];
+    await ensureDoctors(docIds);
+    const specIds = [...new Set(docIds.map(id => findDoctor(id)?.specialization_id).filter(x => x != null))];
+    await ensureSpecs(specIds);
+  }
+
+  // ── НАЧАЛЬНАЯ ЗАГРУЗКА ─────────────────────────────────────────────────────
+  async function loadInitial() {
+    setLoading(true);
+    try {
+      const [p, todayRes] = await Promise.all([
+        apiGet(`/patients/${patientId}`).catch(() => null),
+        apiGet('/schedules/today').catch(() => null),
+      ]);
+      if (todayRes?.today) TODAY = todayRes.today;
+      if (todayRes?.now)   NOW   = todayRes.now;
+      setPatient(p);
+      if (p && p.clinic_id != null && p.clinic_id >= 0) {
+        const c = await apiGet(`/clinics/${p.clinic_id}`).catch(() => null);
+        if (c) {
+          if (!CLINICS.find(x => x.id === c.id)) CLINICS.push(c);
+        }
+      }
+      setConnected(true);
+    } catch (e) {
+      setConnected(false);
+    }
+    setLoading(false);
+  }
+  useEffect(() => { loadInitial(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  // ── ЗАГРУЗКА ЗАПИСЕЙ ───────────────────────────────────────────────────────
+  // Перезапрашивается при смене вкладки (apptsFilter), при возврате на 'home'
+  // или 'appts', и после действий (бронь / отмена) через apptsRefreshTick.
+  async function fetchApptsForCurrent() {
+    if (!patient) return;
+    setApptsLoading(true);
+    try {
+      // Серверный фильтр по статусу — только для вкладки "Предстоящие". В остальных
+      // случаях нужны записи всех статусов, поэтому status не передаём.
+      const useServerStatus = (route === 'appts' && apptsFilter === 'upcoming');
+      const body = { patientId: patient.id };
+      if (useServerStatus) body.status = 0;
+      const list = await apiPost('/appointments/search', body);
+      const arr = Array.isArray(list) ? list : [];
+      // Подгружаем кеши, нужные карточкам
+      await ensureClinicSchedulesAndRooms();
+      const docIds = [...new Set(arr.map(a => a.doctorId).filter(id => id != null))];
+      await ensureDoctors(docIds);
+      const specIds = [...new Set(docIds.map(id => findDoctor(id)?.specialization_id).filter(x => x != null))];
+      await ensureSpecs(specIds);
+      setAppts(arr.map(a => ({ ...a, clinicId: clinicIdForAppt(a) })));
+      setConnected(true);
+    } catch (e) {
+      setConnected(false);
+    }
+    setApptsLoading(false);
+  }
+  useEffect(() => {
+    if (!patient) return;
+    if (route === 'home' || route === 'appts') fetchApptsForCurrent();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [patient, route, apptsFilter, apptsRefreshTick]);
+
+  // upcoming appt — ближайшая (вычисляется ДО ранних return'ов, чтобы порядок hooks не плыл)
+  const upcoming = useMemo(() => {
+    return appts
+      .filter(isUpcoming)
+      .sort((a,b) => a.scheduledAt.localeCompare(b.scheduledAt))[0];
+  }, [appts]);
+  const upcomingCount = useMemo(() => appts.filter(isUpcoming).length, [appts]);
+
+  function startBooking(specId) {
+    setBookingState({
+      step: specId != null ? 1 : 0,
+      specId: specId ?? null,
+      date: null,
+      doctorId: null,
+      clinicId: null,
+      time: null,
+      roomId: null,
+    });
+    setRoute('book');
+  }
+  function cancelBooking() {
+    setBookingState(null);
+    setRoute('home');
+  }
+  async function confirmBooking() {
+    if (!bookingState || !patient) return;
+    try {
+      await apiPost('/appointments', {
+        patientId: patient.id,
+        doctorId:  bookingState.doctorId,
+        scheduledAt: `${bookingState.date} ${bookingState.time}`,
+      });
+      setBookingState(null);
+      setApptsFilter('upcoming');
+      setRoute('appts');           // эффект fetchApptsForCurrent перезагрузит список
+      setApptsRefreshTick(t => t + 1);
+      showToast('Запись создана');
+    } catch (e) {
+      showToast(e.message || 'Не удалось создать запись', false);
+    }
+  }
+  async function cancelAppointment(id) {
+    try {
+      await apiPatch(`/appointments/${id}/status`, { status: 2 });
+      setConfirmCancelId(null);
+      setDetailApptId(null);
+      setApptsRefreshTick(t => t + 1);
+      showToast('Запись отменена');
+    } catch (e) {
+      showToast(e.message || 'Не удалось отменить запись', false);
+    }
+  }
+
+  // === Loading screen ===
+  if (loading) {
+    return (
+      <div className="app mobile">
+        <div className="topbar">
+          <div className="brand"><div className="brand-mark">М</div><span>MedFlow</span></div>
+        </div>
+        <div className="scroll-area" style={{display:'grid', placeItems:'center'}}>
+          <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:14, color:'var(--ink-3)', padding:32}}>
+            <div className="skel" style={{width:48, height:48, borderRadius:'50%'}} />
+            <div className="skel" style={{width:180, height:14}} />
+            <div className="skel" style={{width:120, height:14}} />
+            <div style={{fontSize:13, marginTop:4}}>Загружаем ваши данные…</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // === Patient missing or server unreachable ===
+  if (!patient) {
+    return (
+      <div className="app mobile">
+        <div className="topbar">
+          <div className="brand"><div className="brand-mark">М</div><span>MedFlow</span></div>
+        </div>
+        <div className="scroll-area">
+          <div className="empty" style={{paddingTop: 60}}>
+            <div className="e-ico">{I.info}</div>
+            <h4>{connected ? 'Пациент не найден' : 'Нет связи с сервером'}</h4>
+            <p>{connected
+                ? `Пациент с ID #${patientId} отсутствует в системе.`
+                : 'Не удалось связаться с MedFlow API на localhost:8420. Запустите сервер и попробуйте снова.'}</p>
+            <div style={{display:'flex', gap:8, justifyContent:'center'}}>
+              <button className="btn ghost" onClick={loadInitial}>Повторить</button>
+              <button className="btn primary" onClick={() => window.location.href='/'}>На страницу входа</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // === routing ===
+  let view;
+  if (route === 'home') {
+    view = <HomeView
+      patient={patient}
+      upcoming={upcoming}
+      appts={appts}
+      onBook={() => startBooking(null)}
+      onShowAppt={(id) => setDetailApptId(id)}
+      onTab={setRoute}
+    />;
+  } else if (route === 'appts') {
+    view = <ApptsView
+      appts={appts}
+      filter={apptsFilter}
+      onFilterChange={setApptsFilter}
+      loading={apptsLoading}
+      onShowAppt={(id) => setDetailApptId(id)}
+      onBook={() => startBooking(null)}
+    />;
+  } else if (route === 'book' && bookingState) {
+    view = <BookFlow
+      state={bookingState}
+      setState={setBookingState}
+      existing={appts}
+      clinicId={patient.clinic_id}
+      ensureBookingData={ensureClinicDoctorsAndSpecs}
+      onCancel={cancelBooking}
+      onConfirm={confirmBooking}
+    />;
+  } else if (route === 'profile') {
+    view = <ProfileView
+      patient={patient}
+      appts={appts}
+      theme={theme}
+      onToggleTheme={toggleTheme}
+      onLogout={logout}
+    />;
+  }
+
+  // header (changes per route)
+  let header;
+  if (route === 'book' && bookingState) {
+    const titles = ['Специализация','Дата','Врач','Время','Подтверждение'];
+    header = (
+      <div className="topbar">
+        <button className="back-btn" onClick={() => {
+          if (bookingState.step === 0) cancelBooking();
+          else setBookingState({...bookingState, step: bookingState.step - 1});
+        }}>
+          {I.back}
+          <span>Назад</span>
+        </button>
+        <div className="page-title" style={{marginLeft: 4}}>{titles[bookingState.step]}</div>
+        <div className="right">
+          <button className="icon-btn" onClick={cancelBooking} aria-label="Отменить">
+            {I.x}
+          </button>
+        </div>
+      </div>
+    );
+  } else if (route === 'home') {
+    header = (
+      <div className="topbar">
+        <div className="brand">
+          <div className="brand-mark">М</div>
+          <span>MedFlow</span>
+        </div>
+        <div className="right">
+          <button className="icon-btn" onClick={toggleTheme} aria-label="Тема">{I.moon}</button>
+          <button className="icon-btn" aria-label="Уведомления">{I.bell}</button>
+        </div>
+      </div>
+    );
+  } else {
+    const titles = { appts: 'Мои записи', profile: 'Профиль' };
+    header = (
+      <div className="topbar">
+        <div className="page-title">{titles[route]}</div>
+        <div className="right">
+          {route === 'appts' && (
+            <button className="icon-btn" onClick={() => startBooking(null)} aria-label="Записаться">{I.plus}</button>
+          )}
+          {route === 'profile' && (
+            <button className="icon-btn" onClick={toggleTheme} aria-label="Тема">{I.moon}</button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // sidebar nav (desktop)
+  const desktopNav = (
+    <>
+      <div className="brand">
+        <div className="brand-mark">М</div>
+        <span>MedFlow</span>
+      </div>
+      <div className="pat-card">
+        <div className="row">
+          <div className="pat-avatar">{initials(patient)}</div>
+          <div style={{minWidth:0, flex:1}}>
+            <div className="pat-name">{shortDocName(patient) || fullName(patient)}</div>
+            <div className="pat-sub mono">ID #{String(patient.id).padStart(6, '0')}</div>
+          </div>
+        </div>
+      </div>
+      <button className="btn primary cta-book" onClick={() => startBooking(null)}>
+        {I.plus}<span style={{marginLeft:6}}>Записаться</span>
+      </button>
+      <div className="side-label">Навигация</div>
+      <button className={`nav-item${route==='home'?' active':''}`} onClick={() => setRoute('home')}>
+        <span className="ico">{I.home}</span>Главная
+      </button>
+      <button className={`nav-item${route==='appts'?' active':''}`} onClick={() => setRoute('appts')}>
+        <span className="ico">{I.calendar}</span>Мои записи
+        {upcomingCount > 0 && <span className="cnt">{upcomingCount}</span>}
+      </button>
+      <button className={`nav-item${route==='profile'?' active':''}`} onClick={() => setRoute('profile')}>
+        <span className="ico">{I.user}</span>Профиль
+      </button>
+      <div className="sidebar-foot">
+        <button className="nav-item" onClick={toggleTheme}>
+          <span className="ico">{I.moon}</span>{theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+        </button>
+        <button className="nav-item" onClick={logout}>
+          <span className="ico">{I.logout}</span>Выйти
+        </button>
+      </div>
+    </>
+  );
+
+  const breadcrumbs = {
+    home: 'Главная',
+    appts: 'Мои записи',
+    book: 'Новая запись',
+    profile: 'Профиль',
+  };
+
+  if (mode === 'desktop') {
+    return (
+      <div className="app desktop">
+        <aside className="sidebar">{desktopNav}</aside>
+        <main className="content">
+          <div className="desk-topbar">
+            <div className="breadcrumb">
+              <span>MedFlow</span>
+              <span className="sep">/</span>
+              <span className="here">{breadcrumbs[route] || ''}</span>
+              {route === 'book' && bookingState && (
+                <>
+                  <span className="sep">/</span>
+                  <span className="here">{['Специализация','Дата','Врач','Время','Подтверждение'][bookingState.step]}</span>
+                </>
+              )}
+            </div>
+            <div className="right">
+              {!connected && <span className="tag err dot" title="Сервер недоступен">Нет связи</span>}
+              {route === 'book' && bookingState && (
+                <button className="btn ghost" onClick={cancelBooking}>Отменить</button>
+              )}
+            </div>
+          </div>
+          <div className="scroll-area">
+            <div className="main">{view}</div>
+          </div>
+        </main>
+
+        {detailApptId != null && (
+          <ApptDetailSheet
+            appt={appts.find(a => a.id === detailApptId)}
+            onClose={() => setDetailApptId(null)}
+            onCancel={(id) => setConfirmCancelId(id)}
+          />
+        )}
+        {confirmCancelId != null && (
+          <ConfirmSheet
+            title="Отменить запись?"
+            subtitle="Это действие нельзя отменить. Слот станет доступен другим пациентам."
+            confirmLabel="Отменить запись"
+            danger
+            onClose={() => setConfirmCancelId(null)}
+            onConfirm={() => cancelAppointment(confirmCancelId)}
+          />
+        )}
+        {toast && <div className={`toast ${toast.ok?'ok':'err'}`}>{toast.ok ? I.check : I.x}<span>{toast.msg}</span></div>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="app mobile">
+      {header}
+      <div className="scroll-area">{view}</div>
+
+      {route !== 'book' && (
+        <nav className="tabbar" aria-label="Навигация">
+          <button className={`tab${route==='home'?' active':''}`} onClick={() => setRoute('home')}>
+            {I.home}<span>Главная</span>
+          </button>
+          <button className={`tab${route==='appts'?' active':''}`} onClick={() => setRoute('appts')}>
+            {I.calendar}<span>Записи</span>
+            {upcomingCount > 0 && <span className="badge">{upcomingCount}</span>}
+          </button>
+          <button className={`tab${route==='book'?' active':''}`} onClick={() => startBooking(null)}>
+            {I.plus}<span>Записаться</span>
+          </button>
+          <button className={`tab${route==='profile'?' active':''}`} onClick={() => setRoute('profile')}>
+            {I.user}<span>Профиль</span>
+          </button>
+        </nav>
+      )}
+
+      {detailApptId != null && (
+        <ApptDetailSheet
+          appt={appts.find(a => a.id === detailApptId)}
+          onClose={() => setDetailApptId(null)}
+          onCancel={(id) => setConfirmCancelId(id)}
+        />
+      )}
+
+      {confirmCancelId != null && (
+        <ConfirmSheet
+          title="Отменить запись?"
+          subtitle="Это действие нельзя отменить. Слот станет доступен другим пациентам."
+          confirmLabel="Отменить запись"
+          danger
+          onClose={() => setConfirmCancelId(null)}
+          onConfirm={() => cancelAppointment(confirmCancelId)}
+        />
+      )}
+
+      {toast && <div className={`toast ${toast.ok?'ok':'err'}`}>{toast.ok ? I.check : I.x}<span>{toast.msg}</span></div>}
+    </div>
+  );
+}
+
+// =============================================================================
+// HOME
+// =============================================================================
+function HomeView({ patient, upcoming, appts, onBook, onShowAppt, onTab }) {
+  const recentDone = useMemo(() =>
+    appts.filter(a => a.status === 1).sort((a,b) => b.scheduledAt.localeCompare(a.scheduledAt)).slice(0,2),
+    [appts]
+  );
+  const hour = parseInt(NOW.split(':')[0]);
+  const greeting = hour < 6 ? 'Доброй ночи' : hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер';
+  const firstName = cleanField(patient.first_name, 'Name_Unknown') || cleanField(patient.last_name, 'LName_Unknown') || `Пациент #${patient.id}`;
+
+  return (
+    <div className="main">
+      <div className="greeting">
+        <div className="hello">{greeting},</div>
+        <div className="name">{firstName}</div>
+      </div>
+
+      {upcoming
+        ? <UpcomingBanner appt={upcoming} onClick={() => onShowAppt(upcoming.id)} />
+        : (
+          <div className="upcoming-empty">
+            <div className="ue-ico">{I.calendar}</div>
+            <h4>Нет предстоящих приёмов</h4>
+            <p>Запишитесь к врачу за пару минут</p>
+            <button className="btn primary" onClick={onBook}>Записаться</button>
+          </div>
+        )
+      }
+
+      <div className="section-head"><h3>Быстрые действия</h3></div>
+      <div className="quick-grid">
+        <button className="quick ac1" onClick={onBook}>
+          <div className="q-ico">{I.stetho}</div>
+          <div className="q-title">Записаться к врачу</div>
+          <div className="q-sub">Выберите специалиста</div>
+        </button>
+        <button className="quick ac2" onClick={() => onTab('appts')}>
+          <div className="q-ico">{I.calendar}</div>
+          <div className="q-title">Мои записи</div>
+          <div className="q-sub">Все приёмы</div>
+        </button>
+        <button className="quick ac3" onClick={() => onTab('appts')}>
+          <div className="q-ico">{I.history}</div>
+          <div className="q-title">История</div>
+          <div className="q-sub">Заметки врачей</div>
+        </button>
+        <button className="quick ac4" onClick={() => onTab('profile')}>
+          <div className="q-ico">{I.user}</div>
+          <div className="q-title">Профиль</div>
+          <div className="q-sub">Личные данные</div>
+        </button>
+      </div>
+
+      {SPECIALIZATIONS.length > 0 && (
+        <>
+          <div className="section-head">
+            <h3>Популярные специалисты</h3>
+          </div>
+          <div className="pick-list">
+            {SPECIALIZATIONS.slice(0,4).map(s => (
+              <SpecPick key={s.id} spec={s} onClick={() => { onBook(); /* no preselect for now */ }} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {recentDone.length > 0 && (
+        <>
+          <div className="section-head">
+            <h3>Недавние посещения</h3>
+            <button className="more" onClick={() => onTab('appts')}>Все →</button>
+          </div>
+          <div>
+            {recentDone.map(a => <ApptCard key={a.id} appt={a} onClick={() => onShowAppt(a.id)} />)}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SpecPick({ spec, onClick }) {
+  return (
+    <button className="pick" onClick={onClick}>
+      <div className="p-ico">{I.stetho}</div>
+      <div className="p-main">
+        <div className="p-title">{spec.name}</div>
+        <div className="p-sub">{specHint(spec.name)}</div>
+      </div>
+      <div className="p-arrow">{I.chev}</div>
+    </button>
+  );
+}
+
+function UpcomingBanner({ appt, onClick }) {
+  const { date, time } = parseScheduled(appt.scheduledAt);
+  const doc = findDoctor(appt.doctorId);
+  const spec = doc ? findSpec(doc.specialization_id) : null;
+  const clinic = findClinic(appt.clinicId);
+  const rel = relativeDay(date);
+  const docLabel = [spec?.name, doc ? shortDocName(doc) : null].filter(Boolean).join(' — ') || '—';
+  const locLabel = clinic ? [clinic.name, clinic.address].filter(Boolean).join(', ') : '';
+
+  return (
+    <div className="upcoming-banner" onClick={onClick} role="button">
+      <div className="ub-label">Ближайший приём{rel ? ` · ${rel}` : ''}</div>
+      <div className="ub-when">{fmtDateLong(date)} · {time}</div>
+      <div className="ub-doc">{docLabel}</div>
+      {locLabel && <div className="ub-loc">{locLabel}</div>}
+      <div className="ub-actions">
+        <button className="ub-btn solid" onClick={(e) => { e.stopPropagation(); onClick(); }}>Подробнее</button>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// APPTS LIST
+// =============================================================================
+function ApptsView({ appts, filter, onFilterChange, loading, onShowAppt, onBook, onRefresh }) {
+  const sorted = useMemo(() => {
+    const arr = appts.slice();
+    if (filter === 'upcoming') return arr.filter(a => a.status === 0 && a.scheduledAt >= `${TODAY} ${NOW}`).sort((a,b) => a.scheduledAt.localeCompare(b.scheduledAt));
+    if (filter === 'past')     return arr.filter(a => a.status !== 0 || a.scheduledAt < `${TODAY} ${NOW}`).sort((a,b) => b.scheduledAt.localeCompare(a.scheduledAt));
+    return arr.sort((a,b) => b.scheduledAt.localeCompare(a.scheduledAt));
+  }, [appts, filter]);
+
+  return (
+    <div className="main">
+      <div className="segmented" style={{marginBottom: 16}}>
+        <button className={`seg${filter==='upcoming'?' on':''}`} onClick={() => onFilterChange('upcoming')}>Предстоящие</button>
+        <button className={`seg${filter==='past'?' on':''}`} onClick={() => onFilterChange('past')}>История</button>
+        <button className={`seg${filter==='all'?' on':''}`} onClick={() => onFilterChange('all')}>Все</button>
+      </div>
+
+      {loading
+        ? (
+          <div style={{display:'flex', flexDirection:'column', gap:8}}>
+            <div className="skel" style={{height:88, borderRadius:'var(--radius)'}} />
+            <div className="skel" style={{height:88, borderRadius:'var(--radius)'}} />
+            <div className="skel" style={{height:88, borderRadius:'var(--radius)'}} />
+          </div>
+        )
+        : sorted.length === 0
+          ? (
+            <div className="empty">
+              <div className="e-ico">{I.empty}</div>
+              <h4>{filter === 'upcoming' ? 'Нет предстоящих приёмов' : filter === 'past' ? 'История пуста' : 'Записей нет'}</h4>
+              <p>{filter === 'upcoming' ? 'Запишитесь к врачу прямо сейчас' : 'Здесь появятся ваши прошедшие визиты'}</p>
+              {filter === 'upcoming' && <button className="btn primary" onClick={onBook}>Записаться</button>}
+            </div>
+          )
+          : <div>{sorted.map(a => <ApptCard key={a.id} appt={a} onClick={() => onShowAppt(a.id)} />)}</div>
+      }
+    </div>
+  );
+}
+
+function ApptCard({ appt, onClick }) {
+  const { date, time } = parseScheduled(appt.scheduledAt);
+  const doc = findDoctor(appt.doctorId);
+  const spec = doc ? findSpec(doc.specialization_id) : null;
+  const clinic = findClinic(appt.clinicId);
+  const d = new Date(date+'T00:00:00');
+
+  const upcoming = appt.status === 0 && appt.scheduledAt >= `${TODAY} ${NOW}`;
+  const cancelled = appt.status === 2;
+  const done = appt.status === 1;
+  const cls = upcoming ? 'next' : cancelled ? 'cancelled' : done ? 'done' : '';
+
+  const rel = upcoming ? relativeDay(date) : null;
+
+  return (
+    <div className={`appt-card ${cls}`} onClick={onClick}>
+      <div className="appt-date">
+        <div className="d-num">{d.getDate()}</div>
+        <div className="d-mon">{MONTH_SHORT[d.getMonth()]}</div>
+      </div>
+      <div className="appt-info">
+        <div className="appt-time mono">{time} · {DOW_SHORT[d.getDay()]}{rel ? ` · ${rel}` : ''}</div>
+        <div className="appt-doc">{doc ? shortDocName(doc) : 'Врач не назначен'}</div>
+        {spec?.name && <div className="appt-spec">{spec.name}</div>}
+        {clinic?.name && <div className="appt-loc">{I.pin}<span>{clinic.name}</span></div>}
+        <div className="appt-status-row">
+          {upcoming    && <span className="tag ok dot">Запланирована</span>}
+          {done        && <span className="tag info dot">Завершена</span>}
+          {cancelled   && <span className="tag err dot">Отменена</span>}
+          {done && appt.notes && <span className="tag" style={{fontSize:10.5}}>есть заключение</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// BOOKING FLOW
+// =============================================================================
+function BookFlow({ state, setState, existing, clinicId, ensureBookingData, onCancel, onConfirm }) {
+  // 0 spec, 1 date, 2 doctor, 3 time, 4 confirm
+  const totalSteps = 5;
+
+  const [bootstrapped, setBootstrapped] = useState(false);
+  const [clinicSpecs, setClinicSpecs]   = useState([]);
+
+  const [availableDates, setAvailableDates] = useState([]);
+  const [datesLoading, setDatesLoading]     = useState(false);
+
+  const [doctorsForDate, setDoctorsForDate] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
+
+  const [slotsByClinic, setSlotsByClinic]   = useState({});
+  const [slotsLoading, setSlotsLoading]     = useState(false);
+  const [submitting, setSubmitting]         = useState(false);
+
+  const cIdParam = (clinicId != null && clinicId >= 0) ? `&clinicId=${clinicId}` : '';
+
+  // На входе: подгрузить расписание клиники + докторов + специализации.
+  // Из расписания вычленяем специализации, к которым реально можно записаться.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try { await ensureBookingData(); } catch {}
+      if (cancelled) return;
+      const docIdsAtClinic = [...new Set(SCHEDULES.map(s => s.doctorId))];
+      const specIdSet = new Set(
+        docIdsAtClinic.map(id => findDoctor(id)?.specialization_id).filter(x => x != null)
+      );
+      setClinicSpecs(SPECIALIZATIONS.filter(s => specIdSet.has(s.id)));
+      setBootstrapped(true);
+    })();
+    return () => { cancelled = true; };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  // даты по специализации (с фильтром по клинике пациента)
+  useEffect(() => {
+    if (state.specId == null || state.step < 1) return;
+    let cancelled = false;
+    setDatesLoading(true);
+    apiGet(`/schedules/available-days?specId=${state.specId}&daysAhead=14${cIdParam}`)
+      .then(d => { if (!cancelled) setAvailableDates(Array.isArray(d) ? d : []); })
+      .catch(() => { if (!cancelled) setAvailableDates([]); })
+      .finally(() => { if (!cancelled) setDatesLoading(false); });
+    return () => { cancelled = true; };
+  }, [state.specId, cIdParam]);
+
+  // доктора в выбранную дату (с фильтром по клинике)
+  useEffect(() => {
+    if (state.specId == null || state.date == null || state.step < 2) return;
+    let cancelled = false;
+    setDoctorsLoading(true);
+    apiGet(`/schedules/doctors-by-day?specId=${state.specId}&date=${state.date}${cIdParam}`)
+      .then(async ids => {
+        if (cancelled) return;
+        const idArr = Array.isArray(ids) ? ids : [];
+        // Гарантируем, что все возвращённые врачи есть в кеше (для отображения ФИО)
+        await ensureDoctorsLocal(idArr);
+        if (cancelled) return;
+        const set = new Set(idArr);
+        const docs = DOCTORS.filter(d => set.has(d.id) && d.specialization_id === state.specId);
+        setDoctorsForDate(docs);
+      })
+      .catch(() => { if (!cancelled) setDoctorsForDate([]); })
+      .finally(() => { if (!cancelled) setDoctorsLoading(false); });
+    return () => { cancelled = true; };
+  }, [state.specId, state.date, cIdParam]);
+
+  // временны́е окна (с фильтром по клинике)
+  useEffect(() => {
+    if (state.doctorId == null || state.date == null || state.step < 3) return;
+    let cancelled = false;
+    setSlotsLoading(true);
+    apiGet(`/schedules/time-slots?doctorId=${state.doctorId}&date=${state.date}${cIdParam}`)
+      .then(arr => {
+        if (cancelled) return;
+        const slots = Array.isArray(arr) ? arr : [];
+        const byCl = {};
+        slots.forEach(s => {
+          const room = findRoom(s.roomId);
+          const cId = room ? room.clinicId : (clinicId != null ? clinicId : -1);
+          (byCl[cId] = byCl[cId] || []).push({ ...s, clinicId: cId });
+        });
+        Object.values(byCl).forEach(list => list.sort((a,b) => a.time.localeCompare(b.time)));
+        setSlotsByClinic(byCl);
+      })
+      .catch(() => { if (!cancelled) setSlotsByClinic({}); })
+      .finally(() => { if (!cancelled) setSlotsLoading(false); });
+    return () => { cancelled = true; };
+  }, [state.doctorId, state.date, cIdParam]);
+
+  // Локальный аналог ensureDoctors (App не пробрасывает его сюда напрямую): дополняет
+  // глобальный кеш DOCTORS, если doctors-by-day вернул кого-то нового.
+  async function ensureDoctorsLocal(ids) {
+    const want = [...new Set(ids.filter(id => id != null))];
+    const missing = want.filter(id => !DOCTORS.find(d => d.id === id));
+    if (missing.length === 0) return;
+    const got = await Promise.all(missing.map(id => apiGet(`/doctors/${id}`).catch(() => null)));
+    got.filter(Boolean).forEach(d => { if (!DOCTORS.find(x => x.id === d.id)) DOCTORS.push(d); });
+  }
+
+  function setStep(n, patch = {}) { setState({...state, ...patch, step: n}); }
+
+  async function handleConfirm() {
+    if (submitting) return;
+    setSubmitting(true);
+    try { await onConfirm(); }
+    finally { setSubmitting(false); }
+  }
+
+  return (
+    <>
+      <div className="stepper">
+        {Array.from({length: totalSteps}).map((_, i) => (
+          <div key={i} className={`step-pip${i < state.step ? ' done' : i === state.step ? ' active' : ''}`} />
+        ))}
+      </div>
+      <div className="main">
+        {state.step === 0 && (
+          <>
+            <div className="step-title">
+              <div className="step-eyebrow">Шаг 1 из 5</div>
+              <h2>К какому специалисту?</h2>
+              <div className="step-sub">{bootstrapped ? 'Доступные направления в вашей клинике' : 'Загружаем доступные направления…'}</div>
+            </div>
+            {!bootstrapped
+              ? <div style={{display:'flex', flexDirection:'column', gap:8}}>
+                  <div className="skel" style={{height:64, borderRadius:'var(--radius)'}} />
+                  <div className="skel" style={{height:64, borderRadius:'var(--radius)'}} />
+                  <div className="skel" style={{height:64, borderRadius:'var(--radius)'}} />
+                </div>
+              : clinicSpecs.length === 0
+                ? <div className="empty"><div className="e-ico">{I.stetho}</div><h4>Нет доступных специалистов</h4><p>В вашей клинике пока нет приёмов</p></div>
+                : <div className="pick-list">
+                    {clinicSpecs.map(s => (
+                      <button key={s.id}
+                        className={`pick${state.specId===s.id?' selected':''}`}
+                        onClick={() => setStep(1, { specId: s.id, date: null, doctorId: null, clinicId: null, time: null, roomId: null })}>
+                        <div className="p-ico">{I.stetho}</div>
+                        <div className="p-main">
+                          <div className="p-title">{s.name}</div>
+                          <div className="p-sub">{specHint(s.name)}</div>
+                        </div>
+                        <div className="p-arrow">{I.chev}</div>
+                      </button>
+                    ))}
+                  </div>
+            }
+          </>
+        )}
+
+        {state.step === 1 && (
+          <>
+            <div className="step-title">
+              <div className="step-eyebrow">Шаг 2 из 5 · {findSpec(state.specId)?.name || ''}</div>
+              <h2>Когда удобно?</h2>
+              <div className="step-sub">{datesLoading ? 'Подбираем доступные даты…' : 'Доступные даты на ближайшие 14 дней'}</div>
+            </div>
+            <DateStrip
+              dates={Array.from({length: 14}, (_, i) => addDays(TODAY, i))}
+              available={new Set(availableDates)}
+              selected={state.date}
+              onSelect={(d) => setStep(2, { date: d, doctorId: null, clinicId: null, time: null, roomId: null })}
+            />
+            {!datesLoading && availableDates.length === 0 && (
+              <div className="empty">
+                <div className="e-ico">{I.calendar}</div>
+                <h4>Нет свободных окон</h4>
+                <p>Попробуйте выбрать другого специалиста</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {state.step === 2 && (
+          <>
+            <div className="step-title">
+              <div className="step-eyebrow">Шаг 3 из 5 · {fmtDateLong(state.date)}</div>
+              <h2>Какой врач?</h2>
+              <div className="step-sub">
+                {doctorsLoading
+                  ? 'Загружаем список…'
+                  : `${doctorsForDate.length} ${doctorsForDate.length===1?'доктор принимает':doctorsForDate.length>1 && doctorsForDate.length<5?'доктора принимают':'докторов принимают'} в этот день`}
+              </div>
+            </div>
+            {!doctorsLoading && doctorsForDate.length === 0
+              ? <div className="empty"><div className="e-ico">{I.stetho}</div><h4>Никто не принимает</h4><p>Выберите другую дату</p></div>
+              : <div className="pick-list">
+                  {doctorsForDate.map(d => (
+                    <button key={d.id}
+                      className={`pick${state.doctorId===d.id?' selected':''}`}
+                      onClick={() => setStep(3, { doctorId: d.id, clinicId: null, time: null, roomId: null })}>
+                      <div className="p-ico" style={{borderRadius:'50%'}}>{initials(d)}</div>
+                      <div className="p-main">
+                        <div className="p-title">{shortDocName(d)}</div>
+                        <div className="p-sub">{findSpec(d.specialization_id)?.name || '—'}</div>
+                      </div>
+                      <div className="p-arrow">{I.chev}</div>
+                    </button>
+                  ))}
+                </div>
+            }
+          </>
+        )}
+
+        {state.step === 3 && (
+          <>
+            <div className="step-title">
+              <div className="step-eyebrow">Шаг 4 из 5 · {fmtDateShort(state.date)}, {shortDocName(findDoctor(state.doctorId))}</div>
+              <h2>Свободное время</h2>
+              <div className="step-sub">{slotsLoading ? 'Загружаем расписание…' : 'Выберите удобное окно'}</div>
+            </div>
+            {!slotsLoading && Object.keys(slotsByClinic).length === 0
+              ? <div className="empty"><div className="e-ico">{I.clock}</div><h4>Нет свободных слотов</h4><p>Выберите другую дату</p></div>
+              : Object.entries(slotsByClinic).map(([cId, slots]) => {
+                  const c = findClinic(parseInt(cId));
+                  return (
+                    <div key={cId} className="slot-section">
+                      <h5>{c?.name || 'Клиника'}{c?.address ? ' · ' + c.address : ''}</h5>
+                      <div className="slots-grid">
+                        {slots.map(s => (
+                          <button key={`${cId}-${s.time}`}
+                            className={`slot-btn${state.time===s.time && state.clinicId===parseInt(cId) ? ' selected' : ''}`}
+                            onClick={() => setStep(4, { time: s.time, clinicId: parseInt(cId), roomId: s.roomId })}>
+                            {s.time}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+            }
+          </>
+        )}
+
+        {state.step === 4 && (
+          <>
+            <div className="step-title">
+              <div className="step-eyebrow">Шаг 5 из 5</div>
+              <h2>Подтвердите запись</h2>
+              <div className="step-sub">Проверьте детали перед сохранением</div>
+            </div>
+            <BookSummary state={state} />
+            <div className="inline-note">
+              {I.info}
+              <span>Запись будет создана сразу. Вы сможете отменить её в любой момент в разделе «Мои записи».</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {state.step === 4 && (
+        <div className="step-foot">
+          <button className="btn ghost" onClick={() => setState({...state, step: 3})} style={{flex: '0 0 auto'}} disabled={submitting}>Назад</button>
+          <button className="btn primary" style={{flex: 1}} onClick={handleConfirm} disabled={submitting}>
+            {submitting ? 'Сохраняем…' : 'Подтвердить запись'}
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+function DateStrip({ dates, available, selected, onSelect }) {
+  return (
+    <div className="date-strip">
+      {dates.map(date => {
+        const d = new Date(date+'T00:00:00');
+        const has = available.has(date);
+        const sel = selected === date;
+        return (
+          <button key={date}
+            className={`date-cell${sel?' selected':''}${has?' has':''}${!has?' disabled':''}`}
+            disabled={!has}
+            onClick={() => onSelect(date)}>
+            <div className="dc-dow">{DOW_SHORT[d.getDay()]}</div>
+            <div className="dc-day">{d.getDate()}</div>
+            <div className="dc-mon">{MONTH_SHORT[d.getMonth()]}</div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function BookSummary({ state }) {
+  const spec = findSpec(state.specId);
+  const doc = findDoctor(state.doctorId);
+  const clinic = findClinic(state.clinicId);
+  return (
+    <div className="summary">
+      <div className="summary-row">
+        <div className="sr-ico">{I.stetho}</div>
+        <div>
+          <div className="sr-label">Специалист</div>
+          <div className="sr-val">{doc ? fullName(doc) : '—'}</div>
+          <div className="sr-sub">{spec?.name}</div>
+        </div>
+      </div>
+      <div className="summary-row">
+        <div className="sr-ico">{I.calendar}</div>
+        <div>
+          <div className="sr-label">Дата и время</div>
+          <div className="sr-val">{fmtDateLong(state.date)}, {state.time}</div>
+          <div className="sr-sub">Длительность 30 мин</div>
+        </div>
+      </div>
+      <div className="summary-row">
+        <div className="sr-ico">{I.pin}</div>
+        <div>
+          <div className="sr-label">Клиника</div>
+          <div className="sr-val">{clinic?.name}</div>
+          <div className="sr-sub">{clinic?.address}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// PROFILE
+// =============================================================================
+function ProfileView({ patient, appts, theme, onToggleTheme, onLogout }) {
+  const age = calcAge(patient.birthDate);
+  const clinic = findClinic(patient.clinic_id);
+  const stats = {
+    total: appts.length,
+    done: appts.filter(a => a.status === 1).length,
+    upcoming: appts.filter(isUpcoming).length,
+  };
+  const showName = fullName(patient);
+  const phone = fmtPhone(patient.phone);
+
+  return (
+    <div className="main">
+      <div className="profile-card">
+        <div className="profile-avatar">{initials(patient)}</div>
+        <div className="profile-name">{showName}</div>
+        <div className="profile-meta">{age != null ? `${age} ${ageWord(age)}` : '—'} · {genderLabel(patient.gender)}</div>
+        <div className="profile-meta mono" style={{fontSize:11, color:'var(--ink-4)', marginTop:4, letterSpacing:'.04em'}}>ID #{String(patient.id).padStart(6, '0')}</div>
+      </div>
+
+      <div className="section-head"><h3>Личные данные</h3></div>
+      <div className="card">
+        <div className="info-list">
+          <div className="il-row">
+            <div className="il-ico">{I.cake}</div>
+            <div className="il-main">
+              <div className="il-label">Дата рождения</div>
+              <div className="il-val mono">{fmtIsoBirth(patient.birthDate)}</div>
+            </div>
+          </div>
+          <div className="il-row">
+            <div className="il-ico">{I.shield}</div>
+            <div className="il-main">
+              <div className="il-label">Полис</div>
+              <div className="il-val mono">{patient.insuranceNum || '—'}</div>
+            </div>
+          </div>
+          <div className="il-row">
+            <div className="il-ico">{I.phone}</div>
+            <div className="il-main">
+              <div className="il-label">Телефон</div>
+              <div className="il-val mono">{phone}</div>
+            </div>
+          </div>
+          <div className="il-row">
+            <div className="il-ico">{I.pin}</div>
+            <div className="il-main">
+              <div className="il-label">Прикреплён к клинике</div>
+              <div className="il-val">{clinic?.name || '—'}</div>
+              {clinic?.address && <div style={{fontSize:12, color:'var(--ink-3)', marginTop:2}}>{clinic.address}</div>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="section-head"><h3>Статистика</h3></div>
+      <div className="quick-grid">
+        <div className="quick ac1" style={{cursor:'default', minHeight:'unset'}}>
+          <div className="q-title mono" style={{fontSize: 22}}>{stats.upcoming}</div>
+          <div className="q-sub">Предстоящие</div>
+        </div>
+        <div className="quick ac2" style={{cursor:'default', minHeight:'unset'}}>
+          <div className="q-title mono" style={{fontSize: 22}}>{stats.done}</div>
+          <div className="q-sub">Завершено</div>
+        </div>
+      </div>
+
+      <div className="section-head"><h3>Настройки</h3></div>
+      <div className="menu-list">
+        <button className="ml-row" onClick={onToggleTheme}>
+          <div className="ml-ico">{I.moon}</div>
+          <div style={{flex:1}}>
+            <div>Тема оформления</div>
+            <div style={{fontSize:12, color:'var(--ink-3)', marginTop:1}}>{theme === 'dark' ? 'Тёмная' : 'Светлая'}</div>
+          </div>
+          <div className="ml-arrow">{I.chev}</div>
+        </button>
+        <button className="ml-row danger" onClick={onLogout}>
+          <div className="ml-ico">{I.logout}</div>
+          <div style={{flex:1}}>Выйти из аккаунта</div>
+        </button>
+      </div>
+
+      <div style={{textAlign:'center', color:'var(--ink-4)', fontSize:11, padding:'18px 0 8px'}} className="mono">
+        MedFlow Patient · v1.0.0
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// SHEETS
+// =============================================================================
+function ApptDetailSheet({ appt, onClose, onCancel }) {
+  if (!appt) return null;
+  const { date, time } = parseScheduled(appt.scheduledAt);
+  const doc = findDoctor(appt.doctorId);
+  const spec = doc ? findSpec(doc.specialization_id) : null;
+  const clinic = findClinic(appt.clinicId);
+
+  const upcoming = appt.status === 0 && appt.scheduledAt >= `${TODAY} ${NOW}`;
+  const done = appt.status === 1;
+  const cancelled = appt.status === 2;
+
+  useEffect(() => {
+    const h = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  return (
+    <div className="sheet-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="sheet">
+        <div className="sheet-grab" />
+        <div style={{display:'flex', alignItems:'center', gap:10, marginBottom: 14}}>
+          {upcoming  && <span className="tag ok dot">Запланирована</span>}
+          {done      && <span className="tag info dot">Завершена</span>}
+          {cancelled && <span className="tag err dot">Отменена</span>}
+          <span style={{marginLeft:'auto', fontSize:11, color:'var(--ink-3)'}} className="mono">№ {appt.id}</span>
+        </div>
+
+        <h3>{fmtDateLong(date)}</h3>
+        <div className="sh-sub mono">{time} · 30 мин</div>
+
+        <div className="summary">
+          <div className="summary-row">
+            <div className="sr-ico">{I.stetho}</div>
+            <div>
+              <div className="sr-label">Врач</div>
+              <div className="sr-val">{doc ? fullName(doc) : '—'}</div>
+              <div className="sr-sub">{spec?.name}</div>
+            </div>
+          </div>
+          {clinic && (
+            <div className="summary-row">
+              <div className="sr-ico">{I.pin}</div>
+              <div>
+                <div className="sr-label">Клиника</div>
+                <div className="sr-val">{clinic.name}</div>
+                {clinic.address && <div className="sr-sub">{clinic.address}</div>}
+              </div>
+            </div>
+          )}
+          {clinic?.phone && cleanField(clinic.phone, 'Phone_Unknown') && (
+            <div className="summary-row">
+              <div className="sr-ico">{I.phone}</div>
+              <div>
+                <div className="sr-label">Регистратура</div>
+                <div className="sr-val mono">{clinic.phone}</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {done && appt.notes && (
+          <>
+            <div className="section-head" style={{marginTop:18}}>
+              <h3 style={{textTransform:'none', letterSpacing:0, fontSize:14, color:'var(--ink)'}}>Заключение врача</h3>
+            </div>
+            <div style={{background:'var(--bg-soft)', padding:'14px', borderRadius:'var(--radius)', fontSize:13.5, lineHeight:1.5, color:'var(--ink-2)', border:'1px solid var(--line-soft)'}}>
+              {appt.notes}
+            </div>
+          </>
+        )}
+
+        {done && !appt.notes && (
+          <div style={{padding:'14px', textAlign:'center', color:'var(--ink-3)', fontSize:13}}>
+            Заметок к этому приёму нет
+          </div>
+        )}
+
+        <div className="sh-actions">
+          <button className="btn ghost block" onClick={onClose}>Закрыть</button>
+          {upcoming && (
+            <button className="btn danger block" onClick={() => onCancel(appt.id)}>Отменить запись</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmSheet({ title, subtitle, confirmLabel, danger, onClose, onConfirm }) {
+  useEffect(() => {
+    const h = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  return (
+    <div className="sheet-backdrop" onClick={e => e.target === e.currentTarget && onClose()} style={{zIndex:150}}>
+      <div className="sheet">
+        <div className="sheet-grab" />
+        <h3>{title}</h3>
+        <div className="sh-sub">{subtitle}</div>
+        <div className="sh-actions">
+          <button className="btn ghost block" onClick={onClose}>Отмена</button>
+          <button className={`btn ${danger?'danger':'primary'} block`} onClick={onConfirm}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
