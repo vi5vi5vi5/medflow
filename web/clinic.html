@@ -244,6 +244,10 @@
   .detail-tabs { display: flex; gap: 2px; padding: 10px 14px 0; border-bottom: 1px solid var(--line-soft); }
   .detail-tab { padding: 6px 12px; border-bottom: 2px solid transparent; font-size: 13px; color: var(--ink-3); cursor: pointer; white-space: nowrap; }
   .detail-tab.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 500; }
+  .detail-close { display: none; }
+  .detail-scrim { display: none; }
+  @keyframes detailSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes detailScrimIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* ── timeline ── */
   .timeline { position: relative; padding-left: 22px; }
@@ -341,6 +345,36 @@
     .stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .two-col { grid-template-columns: 1fr; }
     .detail { grid-template-columns: 1fr; }
+    /* Детали человека на мобильном — полноэкранное окно поверх списка,
+       а не панель внизу (иначе при тысячах записей пришлось бы листать до низа) */
+    .detail-empty { display: none !important; }
+    .detail-scrim {
+      display: block;
+      position: fixed; inset: 0; z-index: 79;
+      background: rgba(15,20,18,0.45);
+      backdrop-filter: blur(2px);
+      animation: detailScrimIn .22s ease;
+    }
+    .detail-panel {
+      position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 80;
+      margin: 0; border: none;
+      border-radius: 16px 16px 0 0;
+      max-height: 88vh;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      box-shadow: 0 -12px 40px rgba(0,0,0,0.28);
+      animation: detailSheetUp .3s cubic-bezier(.32,.72,0,1);
+    }
+    /* полоска-хват сверху как у обычных bottom sheet */
+    .detail-panel::before {
+      content: ""; display: block;
+      width: 36px; height: 4px; margin: 8px auto 2px;
+      border-radius: 999px; background: var(--line);
+    }
+    .detail-panel > div:first-child {
+      position: sticky; top: 0; z-index: 2;
+      background: var(--bg-elev);
+    }
+    .detail-close { display: inline-flex; flex-shrink: 0; font-size: 18px; }
     .row2, .row3 { grid-template-columns: 1fr; }
 
     table.list th, table.list td { padding: 9px 8px; }
@@ -903,8 +937,11 @@ function PatientsView({ clinicId, patients, appointments, specs, today, onAddPat
 
         {/* Detail panel */}
         {selected ? (
-          <div className="card" style={{ padding: 0, alignSelf: 'start' }}>
+          <React.Fragment>
+          <div className="detail-scrim" onClick={() => setSelected(null)} />
+          <div className="card detail-panel" style={{ padding: 0, alignSelf: 'start' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--line-soft)', display: 'flex', gap: 10, alignItems: 'center' }}>
+              <button className="detail-close icon-btn" onClick={() => setSelected(null)} aria-label="Назад">←</button>
               <Av p={selected} size={36} fs={13} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: 14 }}>{fullName(selected)}</div>
@@ -960,8 +997,9 @@ function PatientsView({ clinicId, patients, appointments, specs, today, onAddPat
               )}
             </div>
           </div>
+          </React.Fragment>
         ) : (
-          <div className="card" style={{ display: 'grid', placeItems: 'center', minHeight: 200 }}>
+          <div className="card detail-empty" style={{ display: 'grid', placeItems: 'center', minHeight: 200 }}>
             <Empty text="Выберите пациента из списка" />
           </div>
         )}
@@ -1050,8 +1088,11 @@ function DoctorsView({ clinicId, doctors, schedules, rooms, specs, appointments,
         </div>
 
         {selected ? (
-          <div className="card" style={{ padding: 0, alignSelf: 'start' }}>
+          <React.Fragment>
+          <div className="detail-scrim" onClick={() => setSelected(null)} />
+          <div className="card detail-panel" style={{ padding: 0, alignSelf: 'start' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--line-soft)', display: 'flex', gap: 10, alignItems: 'center' }}>
+              <button className="detail-close icon-btn" onClick={() => setSelected(null)} aria-label="Назад">←</button>
               <Av p={selected} size={36} fs={13} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, fontSize: 14 }}>{fullName(selected)}</div>
@@ -1111,8 +1152,9 @@ function DoctorsView({ clinicId, doctors, schedules, rooms, specs, appointments,
               )}
             </div>
           </div>
+          </React.Fragment>
         ) : (
-          <div className="card" style={{ display:'grid', placeItems:'center', minHeight:200 }}>
+          <div className="card detail-empty" style={{ display:'grid', placeItems:'center', minHeight:200 }}>
             <Empty text="Выберите врача из списка" />
           </div>
         )}
