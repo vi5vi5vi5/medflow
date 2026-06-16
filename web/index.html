@@ -180,6 +180,102 @@
     line-height: 1.6;
   }
   svg { display: block; }
+
+  /* ---------- Планшеты ---------- */
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr 420px; }
+    .left { padding: 36px; }
+    .left-tagline { font-size: 30px; }
+    .right { padding: 40px 32px; }
+  }
+
+  /* ---------- Телефоны: концепт A — тёмный экран + плавающая карточка ---------- */
+  @media (max-width: 720px) {
+    html, body { height: auto; }
+    .page {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: var(--accent);     /* весь экран тёмный */
+    }
+    /* Верх — бренд + заголовок на тёмном */
+    .left {
+      padding: 56px 26px 22px;
+      gap: 0;
+      flex: 0 0 auto;
+      overflow: visible;
+    }
+    .left-hero { margin-top: 0; }
+    .left-tagline {
+      font-size: 30px;
+      line-height: 1.12;
+      letter-spacing: -.03em;
+      margin-bottom: 0;
+    }
+    .left-tagline span { opacity: 0.5; }
+    /* Лишнее на мобильном прячем — экран чистый, как в концепте A */
+    .left-desc, .left-stats, .role-label, .divider, .foot-note { display: none; }
+
+    /* Низ — белая карточка, лежащая на тёмном фоне */
+    .right {
+      flex: 1 1 auto;
+      align-items: stretch;
+      justify-content: flex-start;
+      background: transparent;
+      padding: 22px 18px 28px;
+    }
+    .card {
+      width: 100%; max-width: 480px; margin: 0 auto;
+      background: var(--bg-elev);
+      border-radius: 20px;
+      padding: 22px 20px 24px;
+      box-shadow: 0 20px 50px -18px rgba(0,0,0,.45);
+    }
+    .card-title { font-size: 19px; }
+    .card-sub { margin-bottom: 18px; }
+
+    /* Роли — сегмент-переключатель */
+    .roles {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--bg-soft);
+      padding: 5px;
+      border-radius: 13px;
+      margin-bottom: 18px;
+    }
+    .role-card {
+      border: none; background: transparent; border-radius: 9px;
+      padding: 11px 4px 9px; box-shadow: none;
+    }
+    .role-card:hover { border: none; background: transparent; }
+    .role-icon {
+      width: auto; height: auto; background: transparent;
+      margin: 0 auto 6px; color: var(--ink-3);
+    }
+    .role-card .rname { font-size: 11.5px; }
+    .role-card .rhint { display: none; }
+    .role-card.selected {
+      border: none; background: var(--bg-elev);
+      box-shadow: 0 2px 8px -3px rgba(0,0,0,.22);
+    }
+    .role-card.selected .role-icon { background: transparent; color: var(--accent); }
+
+    .field label { font-size: 11.5px; }
+    .field input { font-size: 16px; }   /* 16px — iOS не зумит при фокусе */
+    .field .hint { font-size: 11px; }
+    .btn-login { padding: 13px; font-size: 14.5px; }
+  }
+
+  /* ---------- Узкие телефоны ---------- */
+  @media (max-width: 380px) {
+    .left { padding: 48px 20px 20px; }
+    .left-tagline { font-size: 26px; }
+    .right { padding: 20px 14px 24px; }
+    .card { padding: 20px 16px 22px; }
+    .roles { gap: 4px; }
+    .role-card { padding: 10px 2px 8px; }
+    .role-card .rname { font-size: 11px; }
+  }
 </style>
 </head>
 <body>
