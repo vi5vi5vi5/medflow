@@ -11,7 +11,7 @@
 `../seed.bck` (по умолчанию) — JSON в формате
 [`BackupService`](../services/BackupService.h), который можно
 залить через `POST /api/backup/import` (см.
-[`../API.md`](../API.md)).
+[`../api/README.md`](../api/README.md)).
 
 Соблюдает доменные инварианты, которые проверяют сервисы — иначе
 импорт упадёт:

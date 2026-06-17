@@ -115,7 +115,7 @@ xdg-open http://localhost:8420
 | [`tools/`](tools/README.md)             | Вспомогательные скрипты (генератор тестового бэкапа) |
 | `backups/`                              | Создаётся в рантайме: `medflow.db` + JSON-снапшоты. **Не в гите.** |
 | `MedFlow_BY_LLl-23.cpp`                 | Точка входа: собирает граф зависимостей, ловит сигналы, делает exit-снапшот |
-| [`API.md`](API.md)                      | Полный справочник REST-эндпоинтов |
+| [`api/README.md`](api/README.md)        | HTTP-слой + полный справочник REST-эндпоинтов |
 | [`DEPLOY.md`](DEPLOY.md)                | Деплой на Linux-сервер (Docker, nginx, HTTPS) |
 | `Dockerfile`                            | Multi-stage сборка: gcc:13 → debian:bookworm-slim |
 
@@ -158,7 +158,7 @@ Clinic ─┬─ Room ─────┐
   через FK в БД.
 
 Подробнее по полям — [`models/README.md`](models/README.md);
-по эндпоинтам — [`API.md`](API.md).
+по эндпоинтам — [`api/README.md`](api/README.md).
 
 ---
 
@@ -229,7 +229,7 @@ GET /api/health                          живость
 Сервис бросает `std::invalid_argument` → 400, `std::out_of_range` →
 400, json::exception → 400, остальное → 500.
 
-Полный список — в [`API.md`](API.md).
+Полный список — в [`api/README.md`](api/README.md).
 
 ---
 

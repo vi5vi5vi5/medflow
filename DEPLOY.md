@@ -194,4 +194,4 @@ sudo certbot --nginx -d medflow.example.com
 - `GET http://<host>:8420/api/schedules/today` → текущие «сегодня» и «сейчас» сервиса
 - `GET http://<host>:8420/` → статика из `web/` (UI)
 
-Полный справочник API — в `API.md`.
+Полный справочник API — в `api/README.md`.
