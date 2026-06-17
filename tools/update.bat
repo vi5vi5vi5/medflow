@@ -9,14 +9,15 @@ REM    update.bat          обновить (пересобрать только
 REM    update.bat --force  пересобрать и перезапустить в любом случае
 REM ============================================================
 
-REM Параметры (совпадают с DEPLOY.md)
+REM Параметры (см. tools/README.md)
 set "IMAGE=medflow"
 set "CONTAINER=medflow"
 set "PORT=8420"
-set "STATE_FILE=%~dp0bck1.bck"
 
-REM Работаем из каталога, где лежит скрипт (корень репозитория)
-cd /d "%~dp0" || (echo [ERROR] Не удалось перейти в каталог скрипта & exit /b 1)
+REM Скрипт лежит в tools/; все операции (git, docker build, backups) идут из
+REM корня репозитория — на уровень выше.
+cd /d "%~dp0.." || (echo [ERROR] Не удалось перейти в корень репозитория & exit /b 1)
+set "DATA_DIR=%CD%\backups"
 
 set "FORCE=0"
 if /i "%~1"=="--force" set "FORCE=1"
@@ -50,10 +51,12 @@ if errorlevel 1 (
 echo.
 echo === 3/4 Перезапуск контейнера "%CONTAINER%" ===
 
-REM Файл состояния должен существовать именно как файл (иначе Docker создаст каталог)
-if not exist "%STATE_FILE%" (
-    echo Создаю пустой файл состояния: "%STATE_FILE%"
-    type nul > "%STATE_FILE%"
+REM Каталог backups/ (БД medflow.db + .bck-снапшоты) монтируем с хоста внутрь
+REM контейнера. Без этого приложение пишет в эфемерный /app/backups и теряет
+REM данные при каждом пересоздании контейнера.
+if not exist "%DATA_DIR%" (
+    echo Создаю каталог данных: "%DATA_DIR%"
+    mkdir "%DATA_DIR%"
 )
 
 REM Снести старый контейнер, если он есть (ошибку игнорируем — его может не быть)
@@ -63,7 +66,7 @@ docker run -d ^
   --name "%CONTAINER%" ^
   --restart unless-stopped ^
   -p %PORT%:%PORT% ^
-  -v "%STATE_FILE%:/app/bck1.bck" ^
+  -v "%DATA_DIR%:/app/backups" ^
   "%IMAGE%"
 if errorlevel 1 (
     echo [ERROR] Не удалось запустить контейнер.

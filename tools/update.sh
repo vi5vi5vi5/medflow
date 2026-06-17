@@ -7,16 +7,18 @@
 # ============================================================
 set -euo pipefail
 
-# Параметры (совпадают с DEPLOY.md)
+# Параметры (см. tools/README.md)
 IMAGE="medflow"
 CONTAINER="medflow"
 PORT="8420"
 
-# Работаем из каталога, где лежит скрипт (корень репозитория)
+# Скрипт лежит в tools/; все операции (git, docker build, backups) идут из
+# корня репозитория — на уровень выше.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
 
-STATE_FILE="$SCRIPT_DIR/bck1.bck"
+DATA_DIR="$REPO_ROOT/backups"
 
 FORCE=0
 if [[ "${1:-}" == "--force" ]]; then
@@ -44,11 +46,10 @@ docker build -t "$IMAGE" .
 echo
 echo "=== 3/4 Перезапуск контейнера \"$CONTAINER\" ==="
 
-# Файл состояния должен существовать именно как файл (иначе Docker создаст каталог)
-if [[ ! -f "$STATE_FILE" ]]; then
-    echo "Создаю пустой файл состояния: $STATE_FILE"
-    touch "$STATE_FILE"
-fi
+# Каталог backups/ (БД medflow.db + .bck-снапшоты) монтируем с хоста внутрь
+# контейнера. Без этого приложение пишет в эфемерный /app/backups и теряет
+# все данные при каждом пересоздании контейнера.
+mkdir -p "$DATA_DIR"
 
 # Снести старый контейнер, если он есть (ошибку игнорируем — его может не быть)
 docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
@@ -57,7 +58,7 @@ docker run -d \
   --name "$CONTAINER" \
   --restart unless-stopped \
   -p "$PORT:$PORT" \
-  -v "$STATE_FILE:/app/bck1.bck" \
+  -v "$DATA_DIR:/app/backups" \
   "$IMAGE"
 
 echo

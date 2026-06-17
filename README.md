@@ -89,7 +89,7 @@ xdg-open http://localhost:8420
 
 На Windows PowerShell — `-v "${PWD}\backups:/app/backups"`.
 
-Подробнее — в [`DEPLOY.md`](DEPLOY.md).
+Подробнее — в [`tools/README.md`](tools/README.md).
 
 ### Локально, без Docker (Windows + Visual Studio)
 
@@ -112,11 +112,10 @@ xdg-open http://localhost:8420
 | [`models/`](models/README.md)           | Доменные структуры (Clinic, Doctor, Patient, …) с JSON-сериализацией |
 | [`web/`](web/README.md)                 | Статичный фронтенд: 3 дашборда (clinic / doctor / patient) |
 | [`requirements/`](requirements/README.md) | Vendored-зависимости (httplib, json, sqlite3) |
-| [`tools/`](tools/README.md)             | Вспомогательные скрипты (генератор тестового бэкапа) |
+| [`tools/`](tools/README.md)             | Деплой/обновление (Docker, `update.sh`/`update.bat`) + генератор тестового бэкапа |
 | `backups/`                              | Создаётся в рантайме: `medflow.db` + JSON-снапшоты. **Не в гите.** |
 | `MedFlow_BY_LLl-23.cpp`                 | Точка входа: собирает граф зависимостей, ловит сигналы, делает exit-снапшот |
 | [`api/README.md`](api/README.md)        | HTTP-слой + полный справочник REST-эндпоинтов |
-| [`DEPLOY.md`](DEPLOY.md)                | Деплой на Linux-сервер (Docker, nginx, HTTPS) |
 | `Dockerfile`                            | Multi-stage сборка: gcc:13 → debian:bookworm-slim |
 
 В каждой папке лежит свой `README.md` — там детали по слою. Этот файл —
