@@ -14,6 +14,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 using nlohmann::json;
@@ -314,22 +315,28 @@ struct ApiServer::Impl {
     // ---------------- Backup ----------------
     static constexpr const char* kBackupDir = "backups";
 
-    // Список .bck-файлов в backups/, отсортированный по имени.
-    // Имена содержат ISO-таймстамп, поэтому лексикографическая сортировка
-    // совпадает с хронологической — последний элемент = самый свежий.
+    // Список .bck-файлов в backups/, отсортированный по времени изменения
+    // (от старых к новым) — последний элемент = самый свежий бэкап.
+    // Снапшоты неизменяемы, поэтому mtime == момент сохранения. Сортировка
+    // по имени была бы хрупкой: ручные сейвы (bck_manual.bck, demo.bck и т.п.)
+    // не подчиняются ISO-таймстамп-порядку и всплывали бы выше авто-снапшотов.
     static std::vector<std::string> listBackupFiles() {
         namespace fs = std::filesystem;
-        std::vector<std::string> out;
+        std::vector<std::pair<fs::file_time_type, std::string>> items;
         std::error_code ec;
-        if (!fs::exists(kBackupDir, ec)) return out;
+        if (!fs::exists(kBackupDir, ec)) return {};
         for (const auto& e : fs::directory_iterator(kBackupDir, ec)) {
             if (!e.is_regular_file()) continue;
             auto name = e.path().filename().string();
             if (name.size() >= 4 && name.substr(name.size() - 4) == ".bck") {
-                out.push_back(std::move(name));
+                items.emplace_back(e.last_write_time(ec), std::move(name));
             }
         }
-        std::sort(out.begin(), out.end());
+        std::sort(items.begin(), items.end(),
+                  [](const auto& a, const auto& b) { return a.first < b.first; });
+        std::vector<std::string> out;
+        out.reserve(items.size());
+        for (auto& it : items) out.push_back(std::move(it.second));
         return out;
     }
 
