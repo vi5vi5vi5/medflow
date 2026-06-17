@@ -798,7 +798,7 @@ function App() {
         apiGet('/clinics').catch(() => []),
         apiGet('/specializations').catch(() => []),
         apiGet('/patients').catch(() => []),
-        apiGet('/appointments').catch(() => []),
+        apiPost('/appointments/search', { doctorId }).catch(() => []),
       ]);
 
       const todayDate = todayRes?.today || '2026-04-20';
@@ -849,7 +849,6 @@ function App() {
       setSchedule(sched);
 
       const apptRows = (Array.isArray(doctorAppts) ? doctorAppts : [])
-        .filter(a => a.doctorId === doctorId)
         .map(a => {
           const date      = a.scheduledAt?.slice(0, 10) || '';
           const timeStart = a.scheduledAt?.slice(11, 16) || '';
@@ -894,7 +893,11 @@ function App() {
       if (patch.note !== undefined && patch.note !== a.note) {
         await apiPatch(`/appointments/${a.rawId}/notes`, { notes: patch.note });
       }
-      await loadAll();
+      // сервер подтвердил изменение — обновляем только эту запись в локальном стейте,
+      // без повторной загрузки всех таблиц
+      setAppts(prev => prev.map(x => x.id === internalId
+        ? { ...x, status: patch.status ?? x.status, note: patch.note ?? x.note }
+        : x));
       showToast('Запись обновлена');
     } catch (e) {
       showToast(e.message || 'Ошибка', false);
